@@ -1,10 +1,12 @@
 # NeuroBlocks 🧠🧩
 
 **Scratch-style blocks for AI and machine learning.** Snap together a dataset, a model and a
-`train` block, press the green flag, and watch it learn — live charts, decision maps, generated
-text, physics replays. Build a GPT from layer blocks, teach a car to drive over rough terrain,
-draw digits for a CNN, compare classic ML models… then export the exact same program and run it
-on a big cloud GPU from the command line.
+`train` block, press the green flag, and watch it learn — live charts, decision maps, physics
+replays. Then wire the trained weights into an **output stack** and build the model's output
+yourself, step by step: text → tokens → scores for the next token → probabilities → a choice →
+text again. Build a GPT from layer blocks, teach a car to drive over rough terrain, draw digits
+for a CNN, compare classic ML models… then export the exact same program and run it on a big
+cloud GPU from the command line.
 
 ![blocks → Python → GPU](docs/overview.svg)
 
@@ -23,6 +25,39 @@ Then click **✨ Examples**, pick one, and press **▶ Run**.
 Your projects, data files, trained models and run logs live in `~/NeuroBlocks`
 (`projects/`, `data/`, `models/`, `runs/`). Change it with `--home` or `NEUROBLOCKS_HOME`.
 
+## Training stacks and output stacks
+
+A program has two kinds of stacks, connected by a wire like in a node editor:
+
+```
+ start training when ▶ clicked            ○ start output
+   load text  stories                       set prompt to "Once upon a time"
+   create GPT language model  gpt           set tokens to (tokens of prompt)
+   train gpt on stories                     repeat 300
+   📦 weights of trained gpt  ● ──wire──▶      set scores to (scores for the next token after tokens)
+                                               set probs to (probabilities from scores, temperature 0.8)
+                                               add (pick a random choice from probs) to tokens
+                                               show (text of tokens) as output
+```
+
+* The yellow **training stack** loads data, builds a model and trains it. It ends with the
+  **📦 weights of trained …** block (nothing can go below it): it packs up the trained weights
+  together with what's needed to use them — the tokenizer and context length of a language model,
+  a classifier's class names and input scaling, a classic model's rules, a simulation policy.
+* Drag a **wire** from its **●** to the **○** of a teal **start output** block. Drag from a ○ to
+  unplug or move a wire; double-click a wire to remove it. Wires are saved with the project and
+  work with undo. The wire's label shows what came through it after a run (e.g.
+  `📦 gpt · 239K weights · 48 tokens`), and it animates while the output stack runs.
+* The **output stack** is where the trained model gets used, and you build every step: turn
+  input into numbers (*tokens of*, a list, *ask for a drawing*), *run the model* / *scores for
+  the next token*, *probabilities from scores* (softmax with temperature), *pick a random / the
+  most likely choice*, *name of choice*, *show the top N choices* (a live bar chart),
+  *ask … and wait* / *answer*. Picture generators turn *random noise* into a *picture*;
+  simulation policies loop *what the model senses → run the model → action from scores → do
+  action* until *this try is over*. Everything appears in the **Output** tab.
+* Output stacks run after all training stacks have finished. The Python export shows the same
+  steps as plain code (`gpt_weights.next_token_scores(tokens)`, `nb.softmax(...)`, `nb.pick(...)`).
+
 ## The editor
 
 | | |
@@ -33,7 +68,7 @@ Your projects, data files, trained models and run logs live in `~/NeuroBlocks`
 | **Charts** | Live loss / accuracy / reward curves (smoothing, log scale). Every run of a loop gets its own line. |
 | **Results** | Test tables, confusion matrices, decision maps (they animate while training), prediction galleries, generated text (streams in as it's written), scatter plots. |
 | **Sim** | Physics replays: the car on terrain, a whole evolving population as ghosts, rockets, mazes with the learned policy as arrows. Scrub, slow down, follow the car. |
-| **Play** | Try your model: prompt a language model, draw on a pad for an image classifier, type values into a form, or drive the car yourself with the arrow keys. |
+| **Output** | What output stacks make, newest at the bottom: what came through the wire, text written token by token, live top-choice bar charts, pictures, and *ask* boxes (text or a drawing pad). *let me play* (drive the car yourself with the arrow keys) also opens here. |
 | **Model** | Every layer with its output shape and parameter count (auto-added layers are marked). Click a row to find its block. |
 | **Data** | Dataset previews and class balance; upload CSV / text / zipped image folders. |
 | **Python** | Your blocks as real, readable Python — copy it, download it, or make a cloud bundle. |
@@ -49,8 +84,9 @@ Your projects, data files, trained models and run logs live in `~/NeuroBlocks`
   structural **repeat N times { }** and **residual { }** blocks. Input sizes are inferred; the
   output layer sizes itself; a missing *flatten* is added for you (and you're told).
 * **GPT language models** — prebuilt (*layers / heads / embedding size / dropout*) or built from
-  layers; char / word / GPT-2 tokens; sampling with temperature; or fine-tune a pretrained
-  Hugging Face model (e.g. `distilgpt2`).
+  layers; char / word / GPT-2 tokens; or fine-tune a pretrained Hugging Face model (e.g.
+  `distilgpt2`). Their output stack spells out generation: next-token scores, temperature,
+  sampling, and a live chart of the most likely next tokens.
 * **Picture generators** (generative AI for images) — a VAE or a GAN learns from any image
   dataset and invents new pictures; ask it for a particular class ("draw a 7").
 * **Training:** epochs or steps, batch size, Adam/AdamW/SGD/RMSprop, LR schedules with warm-up,

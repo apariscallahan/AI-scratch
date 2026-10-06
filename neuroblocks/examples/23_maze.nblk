@@ -129,28 +129,10 @@
              },
              "next": {
               "block": {
-               "type": "nb_rl_watch",
+               "type": "nb_weights",
+               "id": "weights",
                "fields": {
-                "MODEL": "explorer",
-                "WORLD": "maze"
-               },
-               "inputs": {
-                "N": {
-                 "shadow": {
-                  "type": "math_number",
-                  "fields": {
-                   "NUM": 1
-                  }
-                 }
-                }
-               },
-               "next": {
-                "block": {
-                 "type": "nb_rl_play",
-                 "fields": {
-                  "WORLD": "maze"
-                 }
-                }
+                "MODEL": "explorer"
                }
               }
              }
@@ -164,8 +146,192 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "nb_o_try",
+       "fields": {
+        "WORLD": "maze"
+       },
+       "next": {
+        "block": {
+         "type": "controls_whileUntil",
+         "fields": {
+          "MODE": "UNTIL"
+         },
+         "inputs": {
+          "BOOL": {
+           "block": {
+            "type": "nb_o_over"
+           }
+          },
+          "DO": {
+           "block": {
+            "type": "variables_set",
+            "fields": {
+             "VAR": {
+              "name": "senses"
+             }
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "nb_o_senses"
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "variables_set",
+              "fields": {
+               "VAR": {
+                "name": "scores"
+               }
+              },
+              "inputs": {
+               "VALUE": {
+                "block": {
+                 "type": "nb_o_run",
+                 "inputs": {
+                  "INPUT": {
+                   "block": {
+                    "type": "variables_get",
+                    "fields": {
+                     "VAR": {
+                      "name": "senses"
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_o_do",
+                "inputs": {
+                 "ACTION": {
+                  "block": {
+                   "type": "nb_o_action",
+                   "inputs": {
+                    "SCORES": {
+                     "block": {
+                      "type": "variables_get",
+                      "fields": {
+                       "VAR": {
+                        "name": "scores"
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_o_try_show",
+           "next": {
+            "block": {
+             "type": "nb_say",
+             "inputs": {
+              "TEXT": {
+               "shadow": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "Hello!"
+                }
+               },
+               "block": {
+                "type": "text_join",
+                "inputs": {
+                 "ADD0": {
+                  "block": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "Score of this try: "
+                   }
+                  }
+                 },
+                 "ADD1": {
+                  "block": {
+                   "type": "nb_round_to",
+                   "inputs": {
+                    "NUM": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 3.14159
+                      }
+                     },
+                     "block": {
+                      "type": "nb_o_try_stat",
+                      "fields": {
+                       "WHAT": "score"
+                      }
+                     }
+                    },
+                    "DIGITS": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 1
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "extraState": {
+                 "itemCount": 2
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_play",
+               "fields": {
+                "WORLD": "maze"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 500,
+     "y": 40
     }
    ]
-  }
+  },
+  "workspaceComments": [
+   {
+    "text": "A Q-table has no neural network: for every square it stores a score for each move (up, down, left, right). 'run the model on' looks up the row for the square it senses, and the action is the move with the highest score.",
+    "width": 380,
+    "height": 130,
+    "x": 500,
+    "y": 659
+   }
+  ]
  }
 }

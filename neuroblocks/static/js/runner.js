@@ -156,9 +156,16 @@ function handle(ev, live = true) {
       if (live) playSound(ev.name);
       break;
     case 'interactive':
-      if (live) { $('#status').textContent = '🎮 Your turn — see the Play tab'; state.lastProgress = Date.now() + 1e9; }
+      if (live) { $('#status').textContent = '🎮 Your turn — see the Output tab'; state.lastProgress = Date.now() + 1e9; }
+      break;
+    case 'ask':
+      if (live && !ev.headless) { $('#status').textContent = '✋ Your turn — answer in the Output tab'; state.lastProgress = Date.now() + 1e9; }
+      break;
+    case 'output_start':
+      if (live) { $('#status').textContent = '○ Output running…'; state.lastProgress = Date.now(); }
       break;
     case 'interactive_end':
+    case 'ask_done':
       state.lastProgress = 0;
       break;
     case 'done': {

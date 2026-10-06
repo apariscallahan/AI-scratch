@@ -1,4 +1,5 @@
-// Play tab: interactive testing sessions started by 'let me …' blocks.
+// Interactive sessions started by 'let me play …' (and the old 'let me prompt / draw / type' blocks),
+// shown in the Output tab.
 import { send } from '../api.js';
 import { $, bus, debounce, el, esc } from '../util.js';
 import { SimRenderer } from './sim.js';
@@ -34,7 +35,7 @@ function shell(title, ...body) {
   const card = el('div', { class: 'card play-card' }, el('h4', {}, title, el('span', { class: 'sub' }, doneBtn)), el('div', { class: 'body' }, ...body));
   area().innerHTML = '';
   area().append(card);
-  $('#play-empty').style.display = 'none';
+  $('#output-empty').style.display = 'none';
   return card;
 }
 
@@ -201,7 +202,7 @@ export function init() {
     else if (ev.kind === 'draw') startDraw(ev);
     else if (ev.kind === 'form') startForm(ev);
     else if (ev.kind === 'game') startGame(ev);
-    bus.emit('tab:show', 'play');
+    bus.emit('tab:show', 'output');
   });
   bus.on('ev:interactive_result', (ev) => {
     if (!session || ev.id !== session.id) return;

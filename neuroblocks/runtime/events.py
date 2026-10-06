@@ -68,6 +68,9 @@ class ConsoleReporter:
         self.last_progress_print = 0.0
         self.last_progress_pct: dict[str, int] = {}
         self.last_debug = 0.0
+        self.stream_key = None  # 'show … as output' text being written token by token
+        self.stream_text = ""
+        self.bars = None  # a live bar chart: printed once its loop is done, not after every update
 
     def sym(self, uni: str, ascii_: str) -> str:
         return uni if self.uni else ascii_
@@ -76,6 +79,27 @@ class ConsoleReporter:
         if self.progress_line:
             self.out.write("\n")
             self.progress_line = False
+        if self.stream_key is not None:
+            self.out.write("\n")
+            self.stream_key = None
+
+    def _write(self, text: str):
+        try:
+            self.out.write(text)
+        except UnicodeEncodeError:
+            self.out.write(text.encode("ascii", "replace").decode())
+        self.out.flush()
+
+    def _stream(self, ev):
+        """Output text that grows (a model writing) is printed as it grows, not over and over."""
+        key, text = ev.get("key"), ev.get("text", "")
+        if key == self.stream_key and text.startswith(self.stream_text):
+            self._write(text[len(self.stream_text):])
+        else:
+            self._end_progress()
+            self._write(f"{self.sym('📝', '>')} {text}")
+            self.stream_key = key
+        self.stream_text = text
 
     def println(self, text: str = ""):
         self._end_progress()
@@ -135,10 +159,36 @@ class ConsoleReporter:
             self.println(f"{self.sym('🧠', '[model]')} {info.get('summary', ev.get('name', ''))}")
         elif t == "confusion":
             pass  # summarised by the evaluation table
-        elif t == "interactive":
-            pass
-        elif t == "done":
+        elif t == "weights":
+            self.println(f"{self.sym('📦', '[weights]')} {ev.get('label', '')}: {ev.get('summary', '')}")
+        elif t == "output_start":
+            self.println(f"{self.sym('○', 'o')} output, using the trained {ev.get('label', '')} " + "-" * 20)
+        elif t == "output_text":
+            self._stream(ev)
+        elif t == "bars":
+            if self.bars is not None and self.bars.get("key") != ev.get("key"):
+                self._flush_bars()
+            self.bars = ev
+        elif t == "output_picture":
+            if ev.get("saved"):
+                self.println(f"{self.sym('🖼 ', '[picture] ')}{ev.get('caption', 'picture')} -> {ev['saved']}")
+        elif t in ("interactive", "ask", "ask_done", "output_end", "done"):
+            self._flush_bars()
             self._end_progress()
+
+    def _flush_bars(self):
+        ev, self.bars = self.bars, None
+        if ev is None:
+            return
+        self.println(ev.get("title", "top choices"))
+        items = ev.get("items") or []
+        width = max([len(str(i.get("label", ""))) for i in items] + [1])
+        top = max([abs(float(i.get("p") or 0)) for i in items] + [1e-9]) if ev.get("scores") else 1.0
+        for i in items:
+            p = float(i.get("p") or 0)
+            bar = ("█" if self.uni else "#") * int(round(28 * max(0.0, min(1.0, abs(p) / top))))
+            val = f"{p:.3g}" if ev.get("scores") else f"{p * 100:.1f}%"
+            self.println(f"  {str(i.get('label', '')).ljust(width)} {bar} {val}")
 
     def _progress(self, ev):
         cur, total = ev.get("current", 0), ev.get("total") or 0

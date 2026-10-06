@@ -73,6 +73,32 @@ def test_examples_compile(path):
 
 
 @pytest.mark.parametrize("path", sorted(paths.EXAMPLES_DIR.glob("*.nblk")), ids=lambda p: p.stem)
+def test_examples_are_clean_and_wired(path):
+    """No warnings in any example, and every output stack is wired to weights at the end of training."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    res = compile_workspace(data["workspace"], markers=False, project=data["name"])
+    assert [d.message for d in res.diagnostics if d.level == "warning"] == []
+    tops = data["workspace"]["blocks"]["blocks"]
+    for hat in (b for b in tops if b["type"] == "nb_when_output"):
+        assert hat["fields"]["PORT"], "output stack without a wire"
+        assert "nb.start_output(" in res.code and "nb.weights(" in res.code
+    used = set(re.findall(r'"type": "(nb_[a-z_]+)"', json.dumps(data)))
+    assert not used & {"nb_predict", "nb_generated", "nb_play_chat", "nb_play_draw", "nb_play_form"}, \
+        "examples should build output stacks instead of the old shortcut blocks"
+
+
+def test_old_shortcut_blocks_are_hidden_and_ports_are_fields():
+    bundle = editor_bundle()
+    toolbox_types = {i["type"] for c in bundle["toolbox"]["contents"] for i in c.get("contents", []) if i.get("type")}
+    assert "nb_weights" in toolbox_types and "nb_when_output" in toolbox_types
+    assert not toolbox_types & {"nb_predict", "nb_play_chat", "nb_play_draw", "nb_play_form", "nb_generated"}
+    hat = next(d for d in bundle["blocks"] if d["type"] == "nb_when_output")
+    assert hat["args0"][0] == {"type": "field_nbport", "name": "PORT", "direction": "in"}
+    weights = next(d for d in bundle["blocks"] if d["type"] == "nb_weights")
+    assert "nextStatement" not in weights  # nothing goes below it: it ends the training stack
+
+
+@pytest.mark.parametrize("path", sorted(paths.EXAMPLES_DIR.glob("*.nblk")), ids=lambda p: p.stem)
 def test_examples_satisfy_blockly_connection_rules(path):
     """Blockly refuses to load stacks whose neighbours have incompatible connection checks."""
     from neuroblocks.compiler.validate import check_connections

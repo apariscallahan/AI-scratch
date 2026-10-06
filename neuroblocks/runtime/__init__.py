@@ -29,6 +29,10 @@ _LAZY = {
     "pretrained_lm": "pretrained",
     # picture generators
     "generator": "generative", "show_generated": "generative",
+    # output stacks: using a trained model step by step
+    "weights": "output", "start_output": "output", "end_output": "output", "wired": "output",
+    "softmax": "output", "pick": "output", "chance_of": "output", "show_text": "output",
+    "show_picture": "output", "ask": "output", "ask_drawing": "output", "answer": "output",
 }
 
 __all__ = list(_core_all) + list(_LAZY) + ["NBError", "StopProgram"]

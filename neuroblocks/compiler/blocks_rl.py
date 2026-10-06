@@ -193,7 +193,7 @@ def _show(b):
 
 
 @block("nb_rl_play", "sims", "let me play %WORLD", WORLD=Ref("world", "world"),
-       tooltip="Control the world yourself with the arrow keys (Play tab). Can you beat the AI?")
+       tooltip="Control the world yourself with the arrow keys (Output tab). Can you beat the AI?")
 def _play(b):
     return [f"nb.rl.play_yourself({b.ref('WORLD')}{b.bid()})"]
 

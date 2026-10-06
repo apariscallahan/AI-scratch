@@ -10,6 +10,7 @@ import * as ChartsPanel from './panels/charts.js';
 import * as ResultsPanel from './panels/results.js';
 import * as SimPanel from './panels/sim.js';
 import * as PlayPanel from './panels/play.js';
+import * as OutputPanel from './panels/output.js';
 import * as ModelPanel from './panels/model.js';
 import * as DataPanel from './panels/data.js';
 import * as CodePanel from './panels/code.js';
@@ -49,7 +50,7 @@ async function boot() {
   initSplitter();
   Project.init();
   Runner.init();
-  for (const p of [ConsolePanel, ChartsPanel, ResultsPanel, SimPanel, PlayPanel, ModelPanel, DataPanel, CodePanel]) p.init();
+  for (const p of [ConsolePanel, ChartsPanel, ResultsPanel, OutputPanel, SimPanel, PlayPanel, ModelPanel, DataPanel, CodePanel]) p.init();
 
   const params = new URLSearchParams(location.search);
   if (!Project.restore()) {

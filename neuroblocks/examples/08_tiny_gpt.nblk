@@ -203,49 +203,10 @@
            },
            "next": {
             "block": {
-             "type": "nb_generate",
+             "type": "nb_weights",
+             "id": "weights",
              "fields": {
               "MODEL": "gpt"
-             },
-             "inputs": {
-              "LENGTH": {
-               "shadow": {
-                "type": "math_number",
-                "fields": {
-                 "NUM": 400
-                }
-               }
-              },
-              "PROMPT": {
-               "shadow": {
-                "type": "text",
-                "fields": {
-                 "TEXT": "ROMEO:"
-                }
-               },
-               "block": {
-                "type": "text",
-                "fields": {
-                 "TEXT": "One day, Max"
-                }
-               }
-              },
-              "TEMP": {
-               "shadow": {
-                "type": "math_number",
-                "fields": {
-                 "NUM": 0.7
-                }
-               }
-              }
-             },
-             "next": {
-              "block": {
-               "type": "nb_play_chat",
-               "fields": {
-                "MODEL": "gpt"
-               }
-              }
              }
             }
            }
@@ -257,16 +218,359 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "variables_set",
+       "fields": {
+        "VAR": {
+         "name": "prompt"
+        }
+       },
+       "inputs": {
+        "VALUE": {
+         "block": {
+          "type": "text",
+          "fields": {
+           "TEXT": "One day, Max"
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "controls_whileUntil",
+         "fields": {
+          "MODE": "UNTIL"
+         },
+         "inputs": {
+          "BOOL": {
+           "block": {
+            "type": "logic_compare",
+            "fields": {
+             "OP": "EQ"
+            },
+            "inputs": {
+             "A": {
+              "block": {
+               "type": "variables_get",
+               "fields": {
+                "VAR": {
+                 "name": "prompt"
+                }
+               }
+              }
+             },
+             "B": {
+              "block": {
+               "type": "text",
+               "fields": {
+                "TEXT": ""
+               }
+              }
+             }
+            }
+           }
+          },
+          "DO": {
+           "block": {
+            "type": "variables_set",
+            "fields": {
+             "VAR": {
+              "name": "tokens"
+             }
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "nb_o_tokens",
+               "inputs": {
+                "TEXT": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "Once upon a time"
+                  }
+                 },
+                 "block": {
+                  "type": "variables_get",
+                  "fields": {
+                   "VAR": {
+                    "name": "prompt"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "controls_repeat_ext",
+              "inputs": {
+               "TIMES": {
+                "block": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 300
+                 }
+                }
+               },
+               "DO": {
+                "block": {
+                 "type": "variables_set",
+                 "fields": {
+                  "VAR": {
+                   "name": "scores"
+                  }
+                 },
+                 "inputs": {
+                  "VALUE": {
+                   "block": {
+                    "type": "nb_o_next",
+                    "inputs": {
+                     "TOKENS": {
+                      "block": {
+                       "type": "variables_get",
+                       "fields": {
+                        "VAR": {
+                         "name": "tokens"
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "variables_set",
+                   "fields": {
+                    "VAR": {
+                     "name": "probs"
+                    }
+                   },
+                   "inputs": {
+                    "VALUE": {
+                     "block": {
+                      "type": "nb_o_probs",
+                      "inputs": {
+                       "SCORES": {
+                        "block": {
+                         "type": "variables_get",
+                         "fields": {
+                          "VAR": {
+                           "name": "scores"
+                          }
+                         }
+                        }
+                       },
+                       "TEMP": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 0.7
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "variables_set",
+                     "fields": {
+                      "VAR": {
+                       "name": "next token"
+                      }
+                     },
+                     "inputs": {
+                      "VALUE": {
+                       "block": {
+                        "type": "nb_o_pick",
+                        "fields": {
+                         "HOW": "random"
+                        },
+                        "inputs": {
+                         "PROBS": {
+                          "block": {
+                           "type": "variables_get",
+                           "fields": {
+                            "VAR": {
+                             "name": "probs"
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     },
+                     "next": {
+                      "block": {
+                       "type": "nb_list_add",
+                       "fields": {
+                        "VAR": {
+                         "name": "tokens"
+                        }
+                       },
+                       "inputs": {
+                        "ITEM": {
+                         "shadow": {
+                          "type": "text",
+                          "fields": {
+                           "TEXT": "thing"
+                          }
+                         },
+                         "block": {
+                          "type": "variables_get",
+                          "fields": {
+                           "VAR": {
+                            "name": "next token"
+                           }
+                          }
+                         }
+                        }
+                       },
+                       "next": {
+                        "block": {
+                         "type": "nb_o_show_text",
+                         "inputs": {
+                          "TEXT": {
+                           "shadow": {
+                            "type": "text",
+                            "fields": {
+                             "TEXT": "Hello!"
+                            }
+                           },
+                           "block": {
+                            "type": "nb_o_text",
+                            "inputs": {
+                             "TOKENS": {
+                              "block": {
+                               "type": "variables_get",
+                               "fields": {
+                                "VAR": {
+                                 "name": "tokens"
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         },
+                         "next": {
+                          "block": {
+                           "type": "nb_o_show_top",
+                           "inputs": {
+                            "N": {
+                             "shadow": {
+                              "type": "math_number",
+                              "fields": {
+                               "NUM": 5
+                              }
+                             }
+                            },
+                            "PROBS": {
+                             "block": {
+                              "type": "variables_get",
+                              "fields": {
+                               "VAR": {
+                                "name": "probs"
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_o_ask",
+                "inputs": {
+                 "QUESTION": {
+                  "shadow": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "What should the story start with?"
+                   }
+                  },
+                  "block": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "Start another story! Type its first words (or leave it empty to stop)"
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "variables_set",
+                  "fields": {
+                   "VAR": {
+                    "name": "prompt"
+                   }
+                  },
+                  "inputs": {
+                   "VALUE": {
+                    "block": {
+                     "type": "nb_o_answer"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 900,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
-    "text": "A GPT reads characters and learns to guess the next one. 'layers' = depth, 'heads' = how many things it pays attention to at once, 'embedding size' = width. Bigger = smarter but slower.",
-    "x": 760,
-    "y": 40,
-    "width": 330,
-    "height": 130
+    "text": "How a GPT writes: turn the prompt into tokens (numbers), let the model score every possible next token, turn the scores into probabilities, pick one at random, add it — and repeat. Watch the bar chart: that's the model making up its mind, one character at a time.\n\nTry: temperature 0.2 (safe, repetitive) or 1.5 (wild). 'pick the most likely' instead of 'a random' makes it always write the same thing.",
+    "width": 420,
+    "height": 190,
+    "x": 900,
+    "y": 851
+   },
+   {
+    "text": "Training: a GPT reads characters and learns to guess the next one. 'layers' = depth, 'heads' = how many things it pays attention to at once, 'embedding size' = width. Bigger = smarter but slower.",
+    "width": 380,
+    "height": 120,
+    "x": 40,
+    "y": 819
    }
   ]
  }

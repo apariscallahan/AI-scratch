@@ -166,6 +166,15 @@
                "fields": {
                 "DATA": "digits",
                 "METHOD": "tsne"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_weights",
+                 "id": "weights",
+                 "fields": {
+                  "MODEL": "autoencoder"
+                 }
+                }
                }
               }
              }
@@ -178,6 +187,70 @@
       }
      },
      "x": 40,
+     "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "controls_repeat_ext",
+       "inputs": {
+        "TIMES": {
+         "block": {
+          "type": "math_number",
+          "fields": {
+           "NUM": 3
+          }
+         }
+        },
+        "DO": {
+         "block": {
+          "type": "nb_o_ask_draw",
+          "inputs": {
+           "QUESTION": {
+            "shadow": {
+             "type": "text",
+             "fields": {
+              "TEXT": "Draw a digit!"
+             }
+            },
+            "block": {
+             "type": "text",
+             "fields": {
+              "TEXT": "Draw a digit — it gets squeezed into 8 numbers and rebuilt"
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_o_show_pic",
+            "inputs": {
+             "PIC": {
+              "block": {
+               "type": "nb_o_run",
+               "inputs": {
+                "INPUT": {
+                 "block": {
+                  "type": "nb_o_answer"
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 740,
      "y": 40
     }
    ]

@@ -286,6 +286,61 @@ table.grid tr.clickable:hover td { background: #f3f5ff; }
 .game-box canvas { width: 100%; height: 100%; display: block; }
 .keys-help { font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 
+/* ------------------------------------------------------------------ output tab */
+#output-list { padding-bottom: 30px; }
+#output-list .bubble { align-self: flex-start; }
+.out-start { border-color: #9fdcea; }
+.out-start > h4 { background: #e6f8fc; }
+.out-start > h4 b { color: #077d95; }
+.out-start details summary { cursor: pointer; font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.out-facts { border-collapse: collapse; margin-top: 6px; font-size: 12.5px; }
+.out-facts th { text-align: left; color: #077d95; padding: 3px 14px 3px 0; white-space: nowrap; vertical-align: top; }
+.out-facts td { padding: 3px 0; }
+.out-note { font-size: 12px; color: var(--ink-2); padding: 0 4px; white-space: pre-wrap; }
+.out-note.warn { color: #9a5b00; }
+.out-note.success { color: #1d7a45; }
+.out-note.end { color: var(--ink-3); border-top: 1px dashed var(--line); padding-top: 6px; text-align: center; }
+.out-text { max-height: 420px; }
+.out-bars { display: flex; flex-direction: column; gap: 4px; }
+.out-bar { display: grid; grid-template-columns: minmax(36px, 130px) 1fr 58px; gap: 8px; align-items: center; font-size: 13px; }
+.out-bar .lbl { font-family: var(--mono); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.out-bar.top .lbl { font-weight: 800; }
+.out-bar .track { height: 14px; background: #eaf6f9; border-radius: 7px; overflow: hidden; }
+.out-bar .fill { height: 100%; background: linear-gradient(90deg, #0aa1bf, #3fd0ec); border-radius: 7px; transition: width .15s; }
+.out-bar .val { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12px; }
+.out-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.out-gallery.many { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+.out-gallery figure { margin: 0; text-align: center; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+.out-gallery img { width: 100%; max-width: 150px; display: block; margin: 0 auto 2px; border-radius: 6px; background: #000; }
+.out-ask { border-color: #0aa1bf; box-shadow: 0 0 0 3px #d4f4fa; }
+.out-ask > h4 { background: #e6f8fc; }
+.out-ask.sent { box-shadow: none; opacity: .65; }
+.out-pad-tools { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.out-you { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.out-q { font-size: 12px; color: var(--ink-3); }
+
+/* ------------------------------------------------------------------ wires between blocks */
+.nb-port { fill: #fff; stroke: #04566a; stroke-width: 3; }
+.nb-port.on { fill: #e3fbff; }
+.nb-port-dot { fill: #04566a; pointer-events: none; }
+.nb-port-hit { fill: transparent; cursor: crosshair; }
+.nb-port-field:hover .nb-port { stroke: #ffbf00; fill: #fff7d6; }
+.nb-wire-casing { fill: none; stroke: #04566a; stroke-width: 8; stroke-linecap: round; opacity: .85; pointer-events: stroke; }
+.nb-wire-core { fill: none; stroke: #3fd0ec; stroke-width: 4; stroke-linecap: round; pointer-events: none; }
+.nb-wire-flow { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 1 15; stroke-linecap: round; opacity: 0;
+  pointer-events: none; }
+.nb-wire:hover .nb-wire-core { stroke: #8be6f7; }
+.nb-wire.flowing .nb-wire-flow { opacity: 1; animation: nb-flow .5s linear infinite; }
+@keyframes nb-flow { to { stroke-dashoffset: -16; } }
+.nb-wire.off .nb-wire-core { stroke: #c4cdd0; }
+.nb-wire.off .nb-wire-casing { stroke: #8a9599; }
+.nb-wire.dragging .nb-wire-core { stroke-dasharray: 10 7; }
+.nb-wire-label { pointer-events: none; }
+.nb-wire-label rect { fill: #fff; stroke: #0aa1bf; stroke-width: 1.5; }
+.nb-wire-label text { font: 700 12px var(--font); fill: #04566a; text-anchor: middle; }
+body.nb-wiring, body.nb-wiring * { cursor: crosshair !important; }
+.nb-wire-target > .blocklyPath { stroke: #ffbf00 !important; stroke-width: 4px !important; }
+
 /* ------------------------------------------------------------------ code */
 #code-view { margin: 0; padding: 12px 14px; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; white-space: pre;
   overflow: auto; flex: 1; background: #fbfbfe; color: #24292f; tab-size: 4; }

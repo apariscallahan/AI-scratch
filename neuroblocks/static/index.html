@@ -59,8 +59,8 @@
       <button data-tab="console" class="active"><span class="ico">💬</span>Console<span class="dot"></span></button>
       <button data-tab="charts"><span class="ico">📈</span>Charts<span class="dot"></span></button>
       <button data-tab="results"><span class="ico">🖼️</span>Results<span class="dot"></span></button>
+      <button data-tab="output"><span class="ico">📤</span>Output<span class="dot"></span></button>
       <button data-tab="sim"><span class="ico">🚗</span>Sim<span class="dot"></span></button>
-      <button data-tab="play"><span class="ico">🎮</span>Play<span class="dot"></span></button>
       <button data-tab="model"><span class="ico">🧠</span>Model<span class="dot"></span></button>
       <button data-tab="data"><span class="ico">📦</span>Data<span class="dot"></span></button>
       <button data-tab="python"><span class="ico">🐍</span>Python<span class="dot"></span></button>
@@ -113,9 +113,13 @@
       </div>
     </section>
 
-    <section class="tab-page" id="tab-play">
+    <section class="tab-page" id="tab-output">
+      <div class="page-toolbar"><span style="font-size:12px;color:var(--ink-2)">What your output stacks make · newest at the bottom</span><span class="grow"></span><button class="small-btn" id="output-clear">Clear</button></div>
+      <div class="cards" id="output-list"></div>
       <div id="play-area"></div>
-      <div class="empty" id="play-empty"><span class="big">🎮</span>Use a <b>let me prompt…</b>, <b>let me draw for…</b>, <b>let me type inputs for…</b> or <b>let me play…</b> block to try things out here.</div>
+      <div class="empty" id="output-empty"><span class="big">📤</span>A trained model's <b>output</b> appears here.<br>
+        End a training stack with <b>📦 weights of trained …</b>, drag a wire from its <b>●</b> to the <b>○</b> of a
+        <b>start output</b> block, then build the output under it: tokens → scores → probabilities → a choice.</div>
     </section>
 
     <section class="tab-page" id="tab-model">

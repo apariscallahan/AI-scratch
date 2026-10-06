@@ -343,6 +343,15 @@
                       }
                      }
                     }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_weights",
+                     "id": "weights",
+                     "fields": {
+                      "MODEL": "model"
+                     }
+                    }
                    }
                   }
                  }
@@ -360,16 +369,218 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "variables_set",
+       "fields": {
+        "VAR": {
+         "name": "point"
+        }
+       },
+       "inputs": {
+        "VALUE": {
+         "block": {
+          "type": "lists_create_with",
+          "inputs": {
+           "ADD0": {
+            "block": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 0.5
+             }
+            }
+           },
+           "ADD1": {
+            "block": {
+             "type": "math_number",
+             "fields": {
+              "NUM": -0.5
+             }
+            }
+           }
+          },
+          "extraState": {
+           "itemCount": 2
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "variables_set",
+         "fields": {
+          "VAR": {
+           "name": "scores"
+          }
+         },
+         "inputs": {
+          "VALUE": {
+           "block": {
+            "type": "nb_o_run",
+            "inputs": {
+             "INPUT": {
+              "block": {
+               "type": "variables_get",
+               "fields": {
+                "VAR": {
+                 "name": "point"
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "variables_set",
+           "fields": {
+            "VAR": {
+             "name": "probs"
+            }
+           },
+           "inputs": {
+            "VALUE": {
+             "block": {
+              "type": "nb_o_probs",
+              "inputs": {
+               "SCORES": {
+                "block": {
+                 "type": "variables_get",
+                 "fields": {
+                  "VAR": {
+                   "name": "scores"
+                  }
+                 }
+                }
+               },
+               "TEMP": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_o_show_top",
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 2
+                }
+               }
+              },
+              "PROBS": {
+               "block": {
+                "type": "variables_get",
+                "fields": {
+                 "VAR": {
+                  "name": "probs"
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_say",
+               "inputs": {
+                "TEXT": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "Hello!"
+                  }
+                 },
+                 "block": {
+                  "type": "text_join",
+                  "inputs": {
+                   "ADD0": {
+                    "block": {
+                     "type": "text",
+                     "fields": {
+                      "TEXT": "The point (0.5, -0.5) belongs to the spiral: "
+                     }
+                    }
+                   },
+                   "ADD1": {
+                    "block": {
+                     "type": "nb_o_name",
+                     "inputs": {
+                      "CHOICE": {
+                       "shadow": {
+                        "type": "math_number",
+                        "fields": {
+                         "NUM": 0
+                        }
+                       },
+                       "block": {
+                        "type": "nb_o_pick",
+                        "fields": {
+                         "HOW": "best"
+                        },
+                        "inputs": {
+                         "PROBS": {
+                          "block": {
+                           "type": "variables_get",
+                           "fields": {
+                            "VAR": {
+                             "name": "probs"
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "extraState": {
+                   "itemCount": 2
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 980,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
-    "text": "Try this: change the number of layers or units, the activation (ReLU → tanh), the noise, or the dataset (moons, circles, XOR…). Then press Run again and compare the decision maps!",
-    "x": 720,
-    "y": 40,
-    "width": 320,
-    "height": 130
+    "text": "Output: the trained network gets two numbers (a point), gives each spiral a score, the scores become probabilities, and the most likely spiral wins. Change the point and run again!\n\nAlso try: more or fewer layers, tanh instead of ReLU, more noise, or the moons / XOR data.",
+    "width": 380,
+    "height": 170,
+    "x": 980,
+    "y": 547
    }
   ]
  }

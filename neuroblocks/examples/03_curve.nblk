@@ -186,60 +186,10 @@
                },
                "next": {
                 "block": {
-                 "type": "nb_say",
-                 "inputs": {
-                  "TEXT": {
-                   "shadow": {
-                    "type": "text",
-                    "fields": {
-                     "TEXT": "Hello!"
-                    }
-                   },
-                   "block": {
-                    "type": "text_join",
-                    "inputs": {
-                     "ADD0": {
-                      "block": {
-                       "type": "text",
-                       "fields": {
-                        "TEXT": "A prediction for x = 1: "
-                       }
-                      }
-                     },
-                     "ADD1": {
-                      "block": {
-                       "type": "nb_predict",
-                       "fields": {
-                        "MODEL": "model"
-                       },
-                       "inputs": {
-                        "INPUT": {
-                         "block": {
-                          "type": "lists_create_with",
-                          "inputs": {
-                           "ADD0": {
-                            "block": {
-                             "type": "math_number",
-                             "fields": {
-                              "NUM": 1
-                             }
-                            }
-                           }
-                          },
-                          "extraState": {
-                           "itemCount": 1
-                          }
-                         }
-                        }
-                       }
-                      }
-                     }
-                    },
-                    "extraState": {
-                     "itemCount": 2
-                    }
-                   }
-                  }
+                 "type": "nb_weights",
+                 "id": "weights",
+                 "fields": {
+                  "MODEL": "model"
                  }
                 }
                }
@@ -255,8 +205,211 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "controls_for",
+       "fields": {
+        "VAR": {
+         "name": "x"
+        }
+       },
+       "inputs": {
+        "FROM": {
+         "block": {
+          "type": "math_number",
+          "fields": {
+           "NUM": -3
+          }
+         }
+        },
+        "TO": {
+         "block": {
+          "type": "math_number",
+          "fields": {
+           "NUM": 3
+          }
+         }
+        },
+        "BY": {
+         "block": {
+          "type": "math_number",
+          "fields": {
+           "NUM": 0.25
+          }
+         }
+        },
+        "DO": {
+         "block": {
+          "type": "nb_chart_point",
+          "inputs": {
+           "X": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 1
+             }
+            },
+            "block": {
+             "type": "variables_get",
+             "fields": {
+              "VAR": {
+               "name": "x"
+              }
+             }
+            }
+           },
+           "Y": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 1
+             }
+            },
+            "block": {
+             "type": "nb_o_run",
+             "inputs": {
+              "INPUT": {
+               "block": {
+                "type": "variables_get",
+                "fields": {
+                 "VAR": {
+                  "name": "x"
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "CHART": {
+            "shadow": {
+             "type": "text",
+             "fields": {
+              "TEXT": "My chart"
+             }
+            },
+            "block": {
+             "type": "text",
+             "fields": {
+              "TEXT": "What the model learned"
+             }
+            }
+           },
+           "SERIES": {
+            "shadow": {
+             "type": "text",
+             "fields": {
+              "TEXT": "results"
+             }
+            },
+            "block": {
+             "type": "text",
+             "fields": {
+              "TEXT": "model's answer"
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_say",
+         "inputs": {
+          "TEXT": {
+           "shadow": {
+            "type": "text",
+            "fields": {
+             "TEXT": "Hello!"
+            }
+           },
+           "block": {
+            "type": "text_join",
+            "inputs": {
+             "ADD0": {
+              "block": {
+               "type": "text",
+               "fields": {
+                "TEXT": "For x = 1 the model answers "
+               }
+              }
+             },
+             "ADD1": {
+              "block": {
+               "type": "nb_round_to",
+               "inputs": {
+                "NUM": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 3.14159
+                  }
+                 },
+                 "block": {
+                  "type": "nb_o_run",
+                  "inputs": {
+                   "INPUT": {
+                    "block": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 1
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "DIGITS": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 3
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "ADD2": {
+              "block": {
+               "type": "text",
+               "fields": {
+                "TEXT": " (the real curve: 0.997)"
+               }
+              }
+             }
+            },
+            "extraState": {
+             "itemCount": 3
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 600,
+     "y": 40
     }
    ]
-  }
+  },
+  "workspaceComments": [
+   {
+    "text": "A model that predicts numbers answers with the number itself — no probabilities needed. The loop asks it about x = -3 … 3 and draws its answers on the Charts tab.",
+    "width": 360,
+    "height": 110,
+    "x": 600,
+    "y": 467
+   }
+  ]
  }
 }

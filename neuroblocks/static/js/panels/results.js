@@ -174,7 +174,7 @@ export function init() {
   bus.on('ev:plot', (ev) => card(ev.title, plotChart(ev), { key: ev.title, block: ev.block }));
   bus.on('ev:predictions', (ev) => card(ev.title, predictions(ev), { block: ev.block }));
   bus.on('ev:text_stream', (ev) => {
-    if (String(ev.id || '').startsWith('chat-')) return; // shown in the Play tab
+    if (String(ev.id || '').startsWith('chat-')) return; // shown in the Output tab
     let s = streams.get(ev.id);
     if (!s) {
       const pre = el('div', { class: 'gen-text' });

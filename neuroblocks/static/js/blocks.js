@@ -56,9 +56,67 @@ class FieldNbRef extends Blockly.FieldDropdown {
   doClassValidation_(v) { return (typeof v === 'string' && v.length) ? v : null; }
 }
 
+// A wire socket, as in node editors: ● 'out' on the 📦 weights block, ○ 'in' on 'start output'.
+// The in-port's value is the id of the weights block it is wired to ('' = not wired).
+// Dragging from a port draws a wire (wires.js) instead of moving the block.
+const PORT_SIZE = 30;
+export const portHandlers = { down: null }; // set by wires.js
+
+export class FieldNbPort extends Blockly.Field {
+  constructor(value, validator, config) {
+    super(value ?? '', validator, config);
+    this.direction = (config && config.direction) === 'out' ? 'out' : 'in';
+    this.SERIALIZABLE = this.direction === 'in';
+    this.EDITABLE = false;
+    this.connected = false;
+  }
+  static fromJson(options) {
+    return new FieldNbPort(options.value ?? '', undefined, options);
+  }
+  doClassValidation_(v) { return typeof v === 'string' ? v : ''; }
+  initView() {
+    const svg = Blockly.utils.dom.createSvgElement;
+    const c = PORT_SIZE / 2;
+    this.fieldGroup_.classList.add('nb-port-field');
+    this.ring = svg('circle', { class: `nb-port nb-port-${this.direction}`, cx: c, cy: c, r: 9 }, this.fieldGroup_);
+    this.dot = svg('circle', { class: 'nb-port-dot', cx: c, cy: c, r: 4.5 }, this.fieldGroup_);
+    this.hit = svg('circle', { class: 'nb-port-hit', cx: c, cy: c, r: 18 }, this.fieldGroup_);
+    const tip = svg('title', {}, this.hit);
+    tip.textContent = this.direction === 'out'
+      ? 'Drag a wire from here to the ○ of a "start output" block'
+      : 'Drop a wire from a 📦 weights block here (drag away to unplug it)';
+    this.hit.addEventListener('pointerdown', (e) => {
+      const block = this.getSourceBlock();
+      if (!block || block.isInFlyout || !portHandlers.down) return; // in the toolbox: drag the block as usual
+      e.stopPropagation();
+      e.preventDefault();
+      portHandlers.down(this, e);
+    });
+    this.setConnected(this.connected);
+  }
+  updateSize_() { this.size_ = new Blockly.utils.Size(PORT_SIZE, PORT_SIZE); }
+  render_() { this.updateSize_(); }
+  getText() { return this.direction === 'out' ? '●' : (this.getValue() ? '●' : '○'); }
+  setConnected(on) {
+    this.connected = !!on;
+    if (this.ring) {
+      this.ring.classList.toggle('on', this.connected);
+      this.dot.style.display = (this.direction === 'out' || this.connected) ? '' : 'none';
+    }
+  }
+  // Centre of the socket on screen (null while hidden, e.g. in a collapsed block).
+  screenCenter() {
+    if (!this.hit || !this.hit.isConnected) return null;
+    const r = this.hit.getBoundingClientRect();
+    if (!r.width) return null;
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+}
+
 function registerFields() {
   try { Blockly.fieldRegistry.register('field_nbname', FieldNbName); } catch (e) { /* already */ }
   try { Blockly.fieldRegistry.register('field_nbref', FieldNbRef); } catch (e) { /* already */ }
+  try { Blockly.fieldRegistry.register('field_nbport', FieldNbPort); } catch (e) { /* already */ }
 }
 
 function makeTheme(bundle) {

@@ -1,12 +1,16 @@
-"""Test & Play blocks, classic ML blocks and file blocks."""
+"""Test blocks, classic ML blocks and file blocks."""
 from __future__ import annotations
 
 from .core import ORDER_FUNCTION_CALL, BlockCtx
 from .helpers import assign, fmt_call, int_code
 from .spec import Drop, Name, Num, Ref, Str, Val, block
 
+LEGACY = ("This is an old shortcut block that hides how a model's output is made. The new way: end the training "
+          "stack with '📦 weights of trained …', wire it to '○ start output' (Output blocks), and build the "
+          "output step by step under it.")
+
 # ===========================================================================
-# Test & Play
+# Test
 # ===========================================================================
 
 
@@ -57,17 +61,22 @@ def _dmap(b):
 
 
 @block("nb_predict", "testing", "prediction of %MODEL for %INPUT", shape="value", output=None,
-       MODEL=Ref("model", "model"), INPUT=Val(None),
-       tooltip="Ask the model about one example: a list of numbers, or a text.")
+       MODEL=Ref("model", "model"), INPUT=Val(None), toolbox=False,
+       tooltip="(Old shortcut) Ask the model about one example. Build an output stack instead.")
 def _predict(b):
+    b.warn(LEGACY)
     return f"nb.predict({b.ref('MODEL')}, {b.val('INPUT', default='None')})", ORDER_FUNCTION_CALL
 
 
-@block("nb_generate", "testing", "write %LENGTH tokens with %MODEL starting with %PROMPT creativity %TEMP",
-       LENGTH=Num(300, integer=True), MODEL=Ref("model", "model"), PROMPT=Str("ROMEO:"), TEMP=Num(0.8),
-       section="Language models",
-       tooltip="Let a language model write. Creativity (temperature): 0 = always the most likely token, "
-               "1 = adventurous, 2 = chaotic.")
+@block("nb_generate", "testing", "preview: %MODEL writes %LENGTH tokens after %PROMPT creativity %TEMP",
+       LENGTH=Num(150, integer=True), MODEL=Ref("model", "model"), PROMPT=Str("ROMEO:"), TEMP=Num(0.8),
+       section="Peek while training",
+       tooltip="A quick look at what a language model writes so far — put it in 'every N steps' to watch it "
+               "improve while it trains. (To really use the model, build an output stack.)",
+       help="This does the whole writing loop in one go, so you can see progress during training. The output "
+            "stack shows what happens inside: tokens → scores for the next token → probabilities → pick one → "
+            "repeat. Creativity is the temperature: 0 = always the most likely token, 1 = adventurous, "
+            "2 = chaotic.")
 def _generate(b):
     return [fmt_call("nb.generate", [b.ref("MODEL"), b.val("PROMPT"), int_code(b, "LENGTH"),
                                      f"temperature={b.val('TEMP')}"] + b.bid_kw())]
@@ -75,35 +84,39 @@ def _generate(b):
 
 @block("nb_generated", "testing", "text written by %MODEL starting with %PROMPT length %LENGTH", shape="value",
        output="String", MODEL=Ref("model", "model"), PROMPT=Str("Once upon a time"), LENGTH=Num(100, integer=True),
-       tooltip="The text a language model writes (as a value you can 'say' or store).")
+       toolbox=False, tooltip="(Old shortcut) The text a language model writes. Build an output stack instead.")
 def _generated(b):
+    b.warn(LEGACY)
     return (f"nb.generated_text({b.ref('MODEL')}, {b.val('PROMPT')}, {int_code(b, 'LENGTH')})",
             ORDER_FUNCTION_CALL)
 
 
-@block("nb_gen_show", "testing", "show %N new pictures from %MODEL of class %CLASS", N=Num(16, integer=True),
-       MODEL=Ref("model", "artist"), CLASS=Str("any"), section="Generated pictures",
-       tooltip="Ask a picture generator to invent new pictures (class 'any', or a class name such as 7 or "
-               "sneaker).")
+@block("nb_gen_show", "testing", "preview: show %N new pictures from %MODEL of class %CLASS",
+       N=Num(16, integer=True), MODEL=Ref("model", "artist"), CLASS=Str("any"),
+       tooltip="A quick look at the pictures a generator invents so far (class 'any', or a class name such as 7 "
+               "or sneaker). To really use it, build an output stack: noise → picture.")
 def _gen_show(b):
     return [f"nb.show_generated({b.ref('MODEL')}, {int_code(b, 'N')}, {b.val('CLASS')}{b.bid()})"]
 
 
-@block("nb_play_chat", "testing", "let me prompt %MODEL", MODEL=Ref("model", "model"), section="Try it yourself",
-       tooltip="Opens a prompt box in the Play tab so you can type and see what the model writes.")
+@block("nb_play_chat", "testing", "let me prompt %MODEL", MODEL=Ref("model", "model"),
+       toolbox=False, tooltip="(Old shortcut) Opens a prompt box so you can type and see what the model writes.")
 def _chat(b):
+    b.warn(LEGACY)
     return [f"nb.play_chat({b.ref('MODEL')}{b.bid()})"]
 
 
 @block("nb_play_draw", "testing", "let me draw for %MODEL", MODEL=Ref("model", "model"),
-       tooltip="Opens a drawing pad in the Play tab: draw a digit (or anything) and see the model's guesses live.")
+       toolbox=False, tooltip="(Old shortcut) Opens a drawing pad: draw a digit and see the model's guesses live.")
 def _draw(b):
+    b.warn(LEGACY)
     return [f"nb.play_draw({b.ref('MODEL')}{b.bid()})"]
 
 
 @block("nb_play_form", "testing", "let me type inputs for %MODEL", MODEL=Ref("model", "model"),
-       tooltip="Opens a form in the Play tab: type values for each input and get a prediction.")
+       toolbox=False, tooltip="(Old shortcut) Opens a form: type values for each input and get a prediction.")
 def _form(b):
+    b.warn(LEGACY)
     return [f"nb.play_form({b.ref('MODEL')}{b.bid()})"]
 
 

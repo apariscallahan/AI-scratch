@@ -99,55 +99,32 @@
              },
              "next": {
               "block": {
-               "type": "nb_gen_show",
+               "type": "nb_save",
                "fields": {
                 "MODEL": "artist"
                },
                "inputs": {
-                "N": {
-                 "shadow": {
-                  "type": "math_number",
-                  "fields": {
-                   "NUM": 16
-                  }
-                 }
-                },
-                "CLASS": {
+                "FILE": {
                  "shadow": {
                   "type": "text",
                   "fields": {
-                   "TEXT": "any"
+                   "TEXT": "my_model.pt"
                   }
                  },
                  "block": {
                   "type": "text",
                   "fields": {
-                   "TEXT": "7"
+                   "TEXT": "digit_artist.pt"
                   }
                  }
                 }
                },
                "next": {
                 "block": {
-                 "type": "nb_save",
+                 "type": "nb_weights",
+                 "id": "weights",
                  "fields": {
                   "MODEL": "artist"
-                 },
-                 "inputs": {
-                  "FILE": {
-                   "shadow": {
-                    "type": "text",
-                    "fields": {
-                     "TEXT": "my_model.pt"
-                    }
-                   },
-                   "block": {
-                    "type": "text",
-                    "fields": {
-                     "TEXT": "digit_artist.pt"
-                    }
-                   }
-                  }
                  }
                 }
                }
@@ -163,16 +140,139 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "variables_set",
+       "fields": {
+        "VAR": {
+         "name": "noise"
+        }
+       },
+       "inputs": {
+        "VALUE": {
+         "block": {
+          "type": "nb_o_noise"
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "controls_for",
+         "fields": {
+          "VAR": {
+           "name": "digit"
+          }
+         },
+         "inputs": {
+          "FROM": {
+           "block": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 0
+            }
+           }
+          },
+          "TO": {
+           "block": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 9
+            }
+           }
+          },
+          "BY": {
+           "block": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 1
+            }
+           }
+          },
+          "DO": {
+           "block": {
+            "type": "nb_o_show_pic",
+            "inputs": {
+             "PIC": {
+              "block": {
+               "type": "nb_o_picture",
+               "inputs": {
+                "NOISE": {
+                 "block": {
+                  "type": "variables_get",
+                  "fields": {
+                   "VAR": {
+                    "name": "noise"
+                   }
+                  }
+                 }
+                },
+                "CLASS": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "any"
+                  }
+                 },
+                 "block": {
+                  "type": "variables_get",
+                  "fields": {
+                   "VAR": {
+                    "name": "digit"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_say",
+           "inputs": {
+            "TEXT": {
+             "shadow": {
+              "type": "text",
+              "fields": {
+               "TEXT": "Hello!"
+              }
+             },
+             "block": {
+              "type": "text",
+              "fields": {
+               "TEXT": "Same noise, ten different digits: the noise decides the handwriting style. Run again for new noise!"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 740,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
-    "text": "Switch VAE to GAN for sharper (but less predictable) pictures — give a GAN more epochs. Try Fashion-MNIST to invent clothes, or your own image folder!",
-    "x": 720,
-    "y": 40,
-    "width": 320,
-    "height": 110
+    "text": "Output: a generator turns a few random numbers (noise) into a picture. Here the SAME noise is drawn as every digit 0–9, so all ten share one handwriting style.\n\nSwitch VAE to GAN for sharper (but less predictable) pictures — give a GAN more epochs.",
+    "width": 370,
+    "height": 150,
+    "x": 740,
+    "y": 395
    }
   ]
  }

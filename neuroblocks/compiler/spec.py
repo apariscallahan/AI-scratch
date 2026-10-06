@@ -49,11 +49,12 @@ category("data", "Data", "#0FBD8C", "#0DA57A", "#0B8E69", "table")
 category("neural", "Neural Nets", "#4C97FF", "#4280D7", "#3373CC", "brain")
 category("layers", "Layers", "#5CB1D6", "#47A8D1", "#2E8EB8", "layers")
 category("training", "Training", "#F2545B", "#E0444B", "#C9353C", "dumbbell")
-category("testing", "Test & Play", "#9966FF", "#855CD6", "#774DCB", "flask")
+category("testing", "Test", "#9966FF", "#855CD6", "#774DCB", "flask")
+category("output", "Output", "#0AA1BF", "#0990AB", "#077D95", "plug")
 category("sims", "Simulations", "#2EAD6B", "#27975D", "#1F7F4E", "car")
 category("world", "World Parts", "#1F9E89", "#1A8875", "#147062", "gear")
 category("classic", "Classic ML", "#CF63CF", "#C94FC9", "#BD42BD", "tree")
-category("output", "Show & Say", "#6C7BEF", "#5B69D9", "#4C59C2", "chat")
+category("show", "Show & Say", "#6C7BEF", "#5B69D9", "#4C59C2", "chat")
 category("control", "Control", "#FFAB19", "#EC9C13", "#CF8B17", "loop")
 category("operators", "Operators", "#40BF4A", "#389438", "#2E7D32", "plus")
 category("variables", "Variables", "#FF8C1A", "#FF8000", "#DB6E00", "var", custom="VARIABLE")
@@ -207,6 +208,24 @@ class Ref(Arg):
 
     def to_blockly(self, name):
         return {"type": "field_nbref", "name": name, "kind": self.kind, "value": self.default}
+
+
+class Port(Arg):
+    """A wire socket, like in node editors.
+
+    ``"out"`` (●) sits on the 📦 weights block at the bottom of a training stack; ``"in"`` (○) sits
+    on an output start block. The user drags a wire from one to the other in the editor; the
+    in-port's value is the id of the weights block it is wired to ("" when unwired).
+    """
+
+    def __init__(self, direction: str):
+        if direction not in ("in", "out"):
+            raise ValueError(direction)
+        self.direction = direction
+        self.default = ""
+
+    def to_blockly(self, name):
+        return {"type": "field_nbport", "name": name, "direction": self.direction}
 
 
 class Var(Arg):
@@ -502,6 +521,9 @@ def make_block(type: str, _id: str | None = None, _extra: dict | None = None, **
                 fields[name] = arg.default if given is None else bool(given)
             elif isinstance(arg, (Text, Name, Ref)):
                 fields[name] = arg.default if given is None else str(given)
+            elif isinstance(arg, Port):
+                if arg.direction == "in":  # only the receiving end stores the wire
+                    fields[name] = "" if given is None else str(given)
             elif isinstance(arg, Var):
                 # Variables are referenced by name; Blockly creates them on load.
                 if isinstance(given, dict):

@@ -43,7 +43,7 @@ def play_yourself(world, _bid=None, **unused):
     emit("interactive", id=sid, kind="game", model="", label=world.name, block=_bid,
          options={"keys": keys, "world": world.kind, "title": world.title})
     emit("log", level="info", block=_bid,
-         text=f"Play '{world.name}' yourself in the Play tab (click the picture first) — " + ", ".join(
+         text=f"Play '{world.name}' yourself in the Output tab (click the picture first) — " + ", ".join(
              f"{'Space' if k == ' ' else k}: {v}" for k, v in keys.items()) + ". Press Done to continue.")
     _drain()
     scores = []

@@ -49,7 +49,16 @@ need) and the architecture that was chosen.
    "create" block; other blocks pick them from dropdowns that update live (and
    renames propagate). Default names (`data`, `model`, `world`) mean beginners
    never have to think about it.
-7. **Smart defaults and auto-fixes.** Output layers size themselves from the data,
+7. **Training and output are separate stacks, joined by a wire.** A training stack ends with a
+   cap-shaped *📦 weights of trained …* block; an output stack starts with *○ start output*. The
+   user drags a wire (node-editor style) from the weights block's ● to the ○. The output stack
+   spells out inference step by step — tokens, next-token scores, softmax with temperature,
+   sampling, decoding — instead of hiding it in one "predict"/"generate" block, so learners see
+   how a model's output is really made. The wire is stored as the in-port's field value (the
+   weights block's id), so saving, undo/redo and copy/paste need nothing special; the editor only
+   draws it. Output stacks run after every training stack and compile to calls on a `Weights`
+   object (`gpt_weights.next_token_scores(tokens)`, `nb.softmax(…)`, `nb.pick(…)`).
+8. **Smart defaults and auto-fixes.** Output layers size themselves from the data,
    input shapes are inferred, a missing Flatten is inserted with a friendly
    warning, the loss function is chosen from the task, the device is picked
    automatically (CUDA → Apple MPS → CPU).
@@ -59,7 +68,8 @@ need) and the architecture that was chosen.
 ## 2. Functionality brainstorm
 
 ### 2.1 The editor (visual element)
-- Scratch-style blocks (zelos renderer), colour-coded categories, green-flag hat block.
+- Scratch-style blocks (zelos renderer), colour-coded categories, a green-flag *start training* hat
+  block and a *start output* hat block, joined by node-editor style wires.
 - Toolbox with labelled sub-sections; containers come pre-filled with sensible settings.
 - The block that is currently running glows; a failing block turns red with the error attached.
 - Static checks before running (missing names, settings in the wrong place).
@@ -67,7 +77,8 @@ need) and the architecture that was chosen.
   loss/accuracy/reward curves), **Results** (decision boundaries, prediction grids,
   confusion matrices, generated text), **Sim** (animated physics replays), **Model**
   (layer-by-layer summary with shapes & parameter counts), **Data** (dataset
-  previews), **Play** (interactive testing), **Python** (generated code).
+  previews), **Output** (what output stacks make, and interactive sessions), **Python**
+  (generated code).
 - Projects: save/open (`.nblk` JSON), autosave, examples gallery, undo/redo,
   zoom, block help.
 - Run controls: ▶ run, ⏭ "skip" (finish the current training early and carry on),
@@ -112,8 +123,8 @@ need) and the architecture that was chosen.
 - Reporter blocks (accuracy of…, last loss of…, prediction for…, generated text…)
   so results can drive logic, loops and charts.
 - **check that … ≥ …** test assertions → ✅/❌ summary and a non-zero exit code on the CLI (CI-friendly).
-- Interactive "Play" tab: prompt/chat with a language model, draw a digit on a pad
-  and see live class probabilities, type feature values into a form.
+- Output stacks (see §2.9) and an **Output** tab: text written token by token, live
+  top-choice charts, pictures, and *ask … and wait* boxes (text, or a drawing pad).
 
 ### 2.6 Simulations & reinforcement learning
 - Worlds: **car on terrain** (pymunk 2D physics), cart-pole, mountain car, pendulum,
@@ -148,6 +159,22 @@ need) and the architecture that was chosen.
   the GUI → design locally, train remotely with live charts (via SSH tunnel or token).
 - `neuroblocks view runs/<run>` — open a finished (cloud) run's charts and replays in the GUI.
 
+### 2.9 Output stacks (using a trained model)
+- *📦 weights of trained [model]* — the cap at the bottom of a training stack; packs the weights
+  with the tokenizer / class names / input scaling / policy needed to use them.
+- *○ start output* — wired to a weights block; runs after training.
+- Language models: *tokens of*, *text of tokens*, *scores for the next token after*.
+- Any model: *run the model on* (numbers, text, a drawing, tokens, a world's senses).
+- *probabilities from scores … temperature …*, *pick a random / the most likely choice*,
+  *name of choice*, *chance of choice*, *show the top N choices* (live bar chart).
+- Picture generators: *random noise*, *picture drawn from noise … as class …*, *show picture*.
+- Simulations: *start a new try in*, *what the model senses*, *action from scores*,
+  *do action*, *this try is over*, *show the replay of this try*.
+- *ask … and wait* / *ask for a drawing … and wait* / *answer*, *show … as output*.
+- The old one-block shortcuts (*prediction of*, *let me prompt / draw / type*) still load and run
+  in old projects but are hidden from the toolbox; *preview: … writes N tokens* stays as a way
+  to peek at a language model while it trains.
+
 ---
 
 ## 3. Architecture
@@ -180,10 +207,12 @@ Event protocol (runtime → GUI), one JSON object per line, e.g.
 Types: `start, device, log, say, block, progress, metric, dataset, model, image,
 table, text, text_stream, confusion, scatter, plot, predictions, check,
 check_summary, sim_replay, sim_live, interactive, interactive_result,
-interactive_end, file, sound, train_done, error, done`.
+interactive_end, file, sound, train_done, weights, output_start, output_end,
+output_text, bars, output_picture, ask, ask_done, error, done`.
 
 Control messages (GUI → runtime) travel over the worker's stdin as JSON lines:
-`skip`, `interact` / `interact_end` (Play-tab sessions) and `keys` (human play).
+`skip`, `interact` / `interact_end` (Output-tab sessions and answers to *ask* blocks) and `keys`
+(human play).
 
 ---
 

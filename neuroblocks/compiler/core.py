@@ -281,6 +281,10 @@ class BlockCtx:
     def name(self, field_name: str = "NAME") -> str:
         return str(self.field(field_name))
 
+    def wired(self) -> str:
+        """Code for the trained weights this (output) block works with."""
+        return self.c.wired_ident(self.id)
+
     # -- diagnostics -----------------------------------------------------
     def warn(self, msg: str):
         self.c.warn(msg, self.id)
@@ -295,6 +299,11 @@ class BlockCtx:
 
     def bid_kw(self) -> list[str]:
         return [f"_bid={self.id!r}"] if (self.c.markers and self.id) else []
+
+
+def section(title: str) -> str:
+    """A comment line that heads a stack in the generated program."""
+    return f"# ── {title} " + "─" * max(4, 74 - len(title))
 
 
 def call(fn: str, *args: str, **kwargs: str | None) -> str:
@@ -329,6 +338,12 @@ class Compiler:
         self.helpers: dict[str, list[str]] = {}
         self._fresh = 0
         self.world_expr = 0  # >0 while generating a world reward/condition formula
+        # Training → output wiring.
+        self.weights_idents: dict[str, str] = {}  # 📦 weights block id -> Python identifier
+        self.weights_models: dict[str, str] = {}  # 📦 weights block id -> name of the model it packs
+        self.stack_kind: str | None = None  # "training" / "output" while generating that kind of stack
+        self.wired: str | None = None  # the weights identifier the current output stack is wired to
+        self.in_proc = 0  # >0 while generating a My Blocks function
 
     # -- diagnostics -----------------------------------------------------
     def warn(self, msg, block_id=None):
@@ -382,6 +397,16 @@ class Compiler:
         if key not in self.obj_idents:
             self.obj_idents[key] = self._claim(name, kind)
         return self.obj_idents[key]
+
+    def wired_ident(self, block_id: str | None) -> str:
+        """The weights an output block uses: the ones wired into the output stack it is in."""
+        if self.stack_kind == "output":
+            return self.wired or "None"  # an unwired output stack is reported once, on its start block
+        if self.in_proc:
+            return "nb.wired()"  # a My Blocks function: whichever output stack is calling it
+        self.error("This block uses a trained model, so it belongs in an output stack: put it under a "
+                   "'○ start output' block that is wired to a 📦 weights block.", block_id)
+        return "None"
 
     # -- tree helpers -----------------------------------------------------
     @staticmethod
@@ -525,33 +550,104 @@ class Compiler:
             self.object_ident(kind, name)
 
         hats = [b for b in tops if b.get("type") == "nb_when_run" and self.enabled(b)]
+        outs = [b for b in tops if b.get("type") == "nb_when_output" and self.enabled(b)]
         procs = [b for b in tops if b.get("type") in ("procedures_defnoreturn", "procedures_defreturn")]
-        others = [b for b in tops if b not in hats and b not in procs]
+        others = [b for b in tops if b not in hats and b not in outs and b not in procs]
+        self.find_weights(hats)
 
         stray = sum(1 for b in others if b.get("type") not in ("nb_comment",))
-        if not hats:
-            self.error("Add a 'when ▶ clicked' block (from Start) and attach your blocks under it.")
+        if not hats and not outs:
+            self.error("Add a 'start training when ▶ clicked' block (from Start) and attach your blocks under it.")
         elif stray:
             for b in others:
-                self.warn("This block isn't attached to a 'when ▶ clicked' block, so it won't run.",
-                          b.get("id"))
+                if b.get("type") == "nb_weights":
+                    self.warn("The 📦 weights block goes at the very bottom of a 'start training when ▶ clicked' "
+                              "stack.", b.get("id"))
+                else:
+                    self.warn("This block isn't attached to a 'start training' or '○ start output' block, so it "
+                              "won't run.", b.get("id"))
+        wired = {str((h.get("fields") or {}).get("PORT") or "") for h in outs}
+        for wid in self.weights_idents:
+            if wid not in wired:
+                self.warn("Nothing uses these weights yet. Drag a wire from this block's ● to the ○ of a "
+                          "'○ start output' block (from Output), then build the output stack under it.", wid)
 
         proc_lines: list[str] = []
+        self.in_proc += 1
         for p in procs:
             proc_lines.extend(self.statement(p))
             proc_lines.append("")
+        self.in_proc -= 1
 
         main_lines: list[str] = []
-        for i, h in enumerate(hats):
+        for h in hats:
+            self.stack_kind = "training"
+            main_lines.append(section("start training when ▶ clicked"))
             main_lines.extend(self.statement(h))
             main_lines.extend(self.statement_chain((h.get("next") or {}).get("block")))
             main_lines.append("")
+        for h in outs:
+            main_lines.extend(self.output_stack(h))
+            main_lines.append("")
+        self.stack_kind = None
 
         code = self.assemble(proc_lines, main_lines)
         names = {ident: {"kind": k, "name": n} for (k, n), ident in self.obj_idents.items()}
         for name, ident in self.var_idents.items():
             names[ident] = {"kind": "variable", "name": name}
         return CompileResult(code=code, diagnostics=self.diagnostics, names=names)
+
+    def find_weights(self, hats: list[dict]):
+        """Give every 📦 weights block that ends up in a training stack a Python name.
+
+        Blocks inside settings (e.g. 'every N steps do') are skipped: they become functions, and the
+        weights belong to the main flow of the training program.
+        """
+        def walk(blk):
+            while blk is not None:
+                if not self.enabled(blk):
+                    pass
+                elif blk.get("type") == "nb_weights":
+                    model = str((blk.get("fields") or {}).get("MODEL") or "model")
+                    self.weights_idents[blk.get("id")] = self._claim(f"{model}_weights", "w")
+                    self.weights_models[blk.get("id")] = model
+                else:
+                    spec = REGISTRY.get(blk.get("type"))
+                    if spec is None or spec.shape != "setting":
+                        for name, inp in (blk.get("inputs") or {}).items():
+                            if spec is None or isinstance(spec.args.get(name), Stack):
+                                walk(inp.get("block"))
+                blk = (blk.get("next") or {}).get("block")
+
+        for h in hats:
+            walk((h.get("next") or {}).get("block"))
+
+    def output_stack(self, hat: dict) -> list[str]:
+        """An output stack: runs after training, using the weights wired into its start block."""
+        hid = hat.get("id")
+        src = str((hat.get("fields") or {}).get("PORT") or "")
+        ident = self.weights_idents.get(src)
+        if not src:
+            self.error("This output stack isn't wired to any weights yet. Drag a wire from the ● on a "
+                       "'📦 weights of trained …' block to the ○ on this block.", hid)
+        elif ident is None:
+            self.error("The 📦 weights block this was wired to is gone (or isn't at the bottom of a training stack "
+                       "any more). Draw a new wire from a weights block to this ○.", hid)
+        model = self.weights_models.get(src)
+        title = f"○ start output ← 📦 weights of trained {model!r}" if model else "○ start output (not wired)"
+        lines = [section(title)]
+        self.stack_kind, self.wired = "output", ident
+        try:
+            body = self.statement_chain((hat.get("next") or {}).get("block"))
+        finally:
+            self.stack_kind, self.wired = None, None
+        w = ident or "None"
+        if self.markers and hid:
+            lines.append(f"nb.at({hid!r})")
+        lines.append(f"nb.start_output({w}" + (f", _bid={hid!r})" if self.markers and hid else ")"))
+        lines.extend(body)
+        lines.append(f"nb.end_output({w})")
+        return lines
 
     def global_names(self, exclude: set[str] = frozenset()) -> list[str]:
         names = list(self.var_idents.values()) + list(self.obj_idents.values())
@@ -579,6 +675,11 @@ class Compiler:
             for v in var_idents:
                 out.append(f"{v} = None")
             out.append("")
+        if self.weights_idents:
+            out.append("# 📦 What training produces (filled in by the weights blocks, used by output stacks)")
+            for w in self.weights_idents.values():
+                out.append(f"{w} = None")
+            out.append("")
         for name, lines in self.helpers.items():
             out.extend(lines)
             out.append("")
@@ -586,7 +687,6 @@ class Compiler:
             out.append("# My Blocks (functions)")
             out.extend(proc_lines)
         if main_lines:
-            out.append("# when ▶ clicked")
             out.extend(main_lines)
         out.append("nb.finish()")
         code = "\n".join(out).rstrip() + "\n"

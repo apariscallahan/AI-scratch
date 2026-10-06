@@ -60,13 +60,16 @@ BUILTIN_TOOLBOX = {
         {"type": "math_on_list", "fields": {"OP": "MAX"}},
         {"type": "lists_sort"},
     ],
-    "output": [
+    "show": [
         {"type": "text_print", "inputs": {"TEXT": _txt("Hello!")}},
     ],
 }
 
 # Where in the category the built-in entries go: "before" or "after" our own blocks.
-BUILTIN_POSITION = {"control": "before", "operators": "before", "lists": "before", "output": "after"}
+BUILTIN_POSITION = {"control": "before", "operators": "before", "lists": "before", "show": "after"}
+
+# Our blocks that are also offered in another category (under a label), so they are easy to find.
+ALSO_IN = {"events": [("Then use the trained model (more in Output)", ["nb_weights", "nb_when_output"])]}
 
 
 def _entry(spec) -> dict:
@@ -99,6 +102,9 @@ def build_toolbox() -> dict:
                 section = spec.section
                 items.append({"kind": "label", "text": section, "web-class": "nb-flyout-label"})
             items.append(_entry(spec))
+        for label, types in ALSO_IN.get(cat.key, []):
+            items.append({"kind": "label", "text": label, "web-class": "nb-flyout-label"})
+            items.extend(_entry(REGISTRY[t]) for t in types)
         if BUILTIN_POSITION.get(cat.key) == "after":
             items.extend(builtin)
         if not items:

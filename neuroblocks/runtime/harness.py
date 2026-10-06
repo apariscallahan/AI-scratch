@@ -51,6 +51,9 @@ def run_script(script: str | Path, names: dict | None = None) -> int:
         emit("error", message=msg, hint=hint, block=block, traceback=short_traceback(e))
     finally:
         sys.argv = old_argv
+        out = sys.modules.get("neuroblocks.runtime.output")
+        if out is not None:
+            out.flush()  # show_text updates still held back
     elapsed = round(time.time() - t0, 2)
     code = 0 if status in ("finished", "stopped") else 1
     if status == "finished" and core.STATE.exit_code:

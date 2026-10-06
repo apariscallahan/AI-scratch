@@ -357,71 +357,32 @@
                        },
                        "next": {
                         "block": {
-                         "type": "nb_generate",
+                         "type": "nb_save",
                          "fields": {
                           "MODEL": "gpt"
                          },
                          "inputs": {
-                          "LENGTH": {
-                           "shadow": {
-                            "type": "math_number",
-                            "fields": {
-                             "NUM": 600
-                            }
-                           }
-                          },
-                          "PROMPT": {
+                          "FILE": {
                            "shadow": {
                             "type": "text",
                             "fields": {
-                             "TEXT": "ROMEO:"
+                             "TEXT": "my_model.pt"
                             }
                            },
                            "block": {
                             "type": "text",
                             "fields": {
-                             "TEXT": "JULIET:"
-                            }
-                           }
-                          },
-                          "TEMP": {
-                           "shadow": {
-                            "type": "math_number",
-                            "fields": {
-                             "NUM": 0.8
+                             "TEXT": "shakespeare_gpt.pt"
                             }
                            }
                           }
                          },
                          "next": {
                           "block": {
-                           "type": "nb_save",
+                           "type": "nb_weights",
+                           "id": "weights",
                            "fields": {
                             "MODEL": "gpt"
-                           },
-                           "inputs": {
-                            "FILE": {
-                             "shadow": {
-                              "type": "text",
-                              "fields": {
-                               "TEXT": "my_model.pt"
-                              }
-                             },
-                             "block": {
-                              "type": "text",
-                              "fields": {
-                               "TEXT": "shakespeare_gpt.pt"
-                              }
-                             }
-                            }
-                           },
-                           "next": {
-                            "block": {
-                             "type": "nb_play_chat",
-                             "fields": {
-                              "MODEL": "gpt"
-                             }
-                            }
                            }
                           }
                          }
@@ -447,16 +408,352 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "variables_set",
+       "fields": {
+        "VAR": {
+         "name": "prompt"
+        }
+       },
+       "inputs": {
+        "VALUE": {
+         "block": {
+          "type": "text",
+          "fields": {
+           "TEXT": "JULIET:"
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "controls_whileUntil",
+         "fields": {
+          "MODE": "UNTIL"
+         },
+         "inputs": {
+          "BOOL": {
+           "block": {
+            "type": "logic_compare",
+            "fields": {
+             "OP": "EQ"
+            },
+            "inputs": {
+             "A": {
+              "block": {
+               "type": "variables_get",
+               "fields": {
+                "VAR": {
+                 "name": "prompt"
+                }
+               }
+              }
+             },
+             "B": {
+              "block": {
+               "type": "text",
+               "fields": {
+                "TEXT": ""
+               }
+              }
+             }
+            }
+           }
+          },
+          "DO": {
+           "block": {
+            "type": "variables_set",
+            "fields": {
+             "VAR": {
+              "name": "tokens"
+             }
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "nb_o_tokens",
+               "inputs": {
+                "TEXT": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "Once upon a time"
+                  }
+                 },
+                 "block": {
+                  "type": "variables_get",
+                  "fields": {
+                   "VAR": {
+                    "name": "prompt"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "controls_repeat_ext",
+              "inputs": {
+               "TIMES": {
+                "block": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 500
+                 }
+                }
+               },
+               "DO": {
+                "block": {
+                 "type": "variables_set",
+                 "fields": {
+                  "VAR": {
+                   "name": "scores"
+                  }
+                 },
+                 "inputs": {
+                  "VALUE": {
+                   "block": {
+                    "type": "nb_o_next",
+                    "inputs": {
+                     "TOKENS": {
+                      "block": {
+                       "type": "variables_get",
+                       "fields": {
+                        "VAR": {
+                         "name": "tokens"
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "variables_set",
+                   "fields": {
+                    "VAR": {
+                     "name": "probs"
+                    }
+                   },
+                   "inputs": {
+                    "VALUE": {
+                     "block": {
+                      "type": "nb_o_probs",
+                      "inputs": {
+                       "SCORES": {
+                        "block": {
+                         "type": "variables_get",
+                         "fields": {
+                          "VAR": {
+                           "name": "scores"
+                          }
+                         }
+                        }
+                       },
+                       "TEMP": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 0.8
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "variables_set",
+                     "fields": {
+                      "VAR": {
+                       "name": "next token"
+                      }
+                     },
+                     "inputs": {
+                      "VALUE": {
+                       "block": {
+                        "type": "nb_o_pick",
+                        "fields": {
+                         "HOW": "random"
+                        },
+                        "inputs": {
+                         "PROBS": {
+                          "block": {
+                           "type": "variables_get",
+                           "fields": {
+                            "VAR": {
+                             "name": "probs"
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     },
+                     "next": {
+                      "block": {
+                       "type": "nb_list_add",
+                       "fields": {
+                        "VAR": {
+                         "name": "tokens"
+                        }
+                       },
+                       "inputs": {
+                        "ITEM": {
+                         "shadow": {
+                          "type": "text",
+                          "fields": {
+                           "TEXT": "thing"
+                          }
+                         },
+                         "block": {
+                          "type": "variables_get",
+                          "fields": {
+                           "VAR": {
+                            "name": "next token"
+                           }
+                          }
+                         }
+                        }
+                       },
+                       "next": {
+                        "block": {
+                         "type": "nb_o_show_text",
+                         "inputs": {
+                          "TEXT": {
+                           "shadow": {
+                            "type": "text",
+                            "fields": {
+                             "TEXT": "Hello!"
+                            }
+                           },
+                           "block": {
+                            "type": "nb_o_text",
+                            "inputs": {
+                             "TOKENS": {
+                              "block": {
+                               "type": "variables_get",
+                               "fields": {
+                                "VAR": {
+                                 "name": "tokens"
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         },
+                         "next": {
+                          "block": {
+                           "type": "nb_o_show_top",
+                           "inputs": {
+                            "N": {
+                             "shadow": {
+                              "type": "math_number",
+                              "fields": {
+                               "NUM": 5
+                              }
+                             }
+                            },
+                            "PROBS": {
+                             "block": {
+                              "type": "variables_get",
+                              "fields": {
+                               "VAR": {
+                                "name": "probs"
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_o_ask",
+                "inputs": {
+                 "QUESTION": {
+                  "shadow": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "What should the story start with?"
+                   }
+                  },
+                  "block": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "Who speaks next? Type a name like HAMLET: (or leave it empty to stop)"
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "variables_set",
+                  "fields": {
+                   "VAR": {
+                    "name": "prompt"
+                   }
+                  },
+                  "inputs": {
+                   "VALUE": {
+                    "block": {
+                     "type": "nb_o_answer"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 840,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
     "text": "These settings fit a laptop CPU. On a cloud GPU (File ▸ Export cloud GPU bundle), run:\nbash run.sh --set layers=6 --set embedding=384 --set context=256 --set batch=64 --set steps=5000\nThat is about the size of nanoGPT's Shakespeare model — it writes convincing fake Shakespeare. The trained model comes back as models/shakespeare_gpt.pt.",
-    "x": 780,
-    "y": 40,
-    "width": 380,
-    "height": 190
+    "width": 400,
+    "height": 190,
+    "x": 840,
+    "y": 851
    }
   ]
  }

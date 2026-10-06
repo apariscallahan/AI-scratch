@@ -444,10 +444,10 @@
   "workspaceComments": [
    {
     "text": "Each pass of the loop builds a fresh network and trains it with a different learning rate. Too big = chaos, too small = barely learns. Look at the loss chart: every run gets its own line.",
-    "x": 760,
-    "y": 40,
     "width": 330,
-    "height": 130
+    "height": 130,
+    "x": 1347,
+    "y": 40
    }
   ]
  }

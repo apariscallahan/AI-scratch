@@ -24,12 +24,15 @@ FLAG_SVG = (
 # ===========================================================================
 
 
-@block("nb_when_run", "events", "when %FLAG clicked", shape="hat",
+@block("nb_when_run", "events", "start training when %FLAG clicked", shape="hat",
        FLAG=Icon(FLAG_SVG, 26, 26, "green flag"),
-       tooltip="Your program starts here. Attach blocks underneath, then press the green ▶ Run button.",
-       help="Like Scratch's green flag: everything stacked under this block runs, top to bottom, "
-            "when you press Run. You can have several of these; they run one after another from "
-            "the top of the workspace down.")
+       tooltip="Your training program starts here: load data, build a model and train it underneath. Finish "
+               "the stack with a '📦 weights of trained …' block, then press the green ▶ Run button.",
+       help="Like Scratch's green flag: everything stacked under this block runs, top to bottom, when you "
+            "press Run. This is where a model learns. To USE the trained model, end this stack with "
+            "'📦 weights of trained …' (from Output), wire it to a '○ start output' block, and build the "
+            "output stack under that. You can have several training stacks; they run one after another "
+            "from the top of the workspace down, and all output stacks run after them.")
 def _when_run(b: BlockCtx):
     return []
 
@@ -537,20 +540,20 @@ def _ifreturn(b: BlockCtx):
 # ===========================================================================
 
 
-@block("nb_say", "output", "say %TEXT", TEXT=Str("Hello!"),
+@block("nb_say", "show", "say %TEXT", TEXT=Str("Hello!"),
        tooltip="Show a message in the Console (like a Scratch speech bubble).")
 def _say(b):
     return [f"nb.say({b.val('TEXT')})"]
 
 
-@block("nb_chart_point", "output", "add point x %X y %Y to chart %CHART line %SERIES",
+@block("nb_chart_point", "show", "add point x %X y %Y to chart %CHART line %SERIES",
        X=Num(1), Y=Num(1), CHART=Str("My chart"), SERIES=Str("results"),
        tooltip="Draw your own live chart: each block adds one point to a line on the Charts tab.")
 def _chart_point(b):
     return [f"nb.plot_point({b.val('CHART')}, {b.val('SERIES')}, {b.val('X')}, {b.val('Y')})"]
 
 
-@block("nb_chart_list", "output", "show %KIND chart of %LIST titled %TITLE",
+@block("nb_chart_list", "show", "show %KIND chart of %LIST titled %TITLE",
        KIND=Drop([("line", "line"), ("bar", "bar"), ("dots", "scatter")], "line"),
        LIST=Val(None), TITLE=Str("My chart"),
        tooltip="Plot a list of numbers as a chart (Results tab).")
@@ -558,7 +561,7 @@ def _chart_list(b):
     return [f"nb.plot_list({b.val('LIST', default='[]')}, kind={b.q('KIND')}, title={b.val('TITLE')})"]
 
 
-@block("nb_sound", "output", "play sound %SOUND",
+@block("nb_sound", "show", "play sound %SOUND",
        SOUND=Drop([("ding", "ding"), ("success", "success"), ("oops", "oops"), ("pop", "pop")], "ding"),
        tooltip="Play a sound in the editor — handy at the end of a long training run.")
 def _sound(b):

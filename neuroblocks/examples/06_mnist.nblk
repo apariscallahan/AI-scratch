@@ -307,7 +307,8 @@
                    },
                    "next": {
                     "block": {
-                     "type": "nb_play_draw",
+                     "type": "nb_weights",
+                     "id": "weights",
                      "fields": {
                       "MODEL": "cnn"
                      }
@@ -329,16 +330,211 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "controls_repeat_ext",
+       "inputs": {
+        "TIMES": {
+         "block": {
+          "type": "math_number",
+          "fields": {
+           "NUM": 5
+          }
+         }
+        },
+        "DO": {
+         "block": {
+          "type": "nb_o_ask_draw",
+          "inputs": {
+           "QUESTION": {
+            "shadow": {
+             "type": "text",
+             "fields": {
+              "TEXT": "Draw a digit!"
+             }
+            },
+            "block": {
+             "type": "text",
+             "fields": {
+              "TEXT": "Draw a digit from 0 to 9"
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "variables_set",
+            "fields": {
+             "VAR": {
+              "name": "scores"
+             }
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "nb_o_run",
+               "inputs": {
+                "INPUT": {
+                 "block": {
+                  "type": "nb_o_answer"
+                 }
+                }
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "variables_set",
+              "fields": {
+               "VAR": {
+                "name": "probs"
+               }
+              },
+              "inputs": {
+               "VALUE": {
+                "block": {
+                 "type": "nb_o_probs",
+                 "inputs": {
+                  "SCORES": {
+                   "block": {
+                    "type": "variables_get",
+                    "fields": {
+                     "VAR": {
+                      "name": "scores"
+                     }
+                    }
+                   }
+                  },
+                  "TEMP": {
+                   "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                     "NUM": 1
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_o_show_top",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 3
+                   }
+                  }
+                 },
+                 "PROBS": {
+                  "block": {
+                   "type": "variables_get",
+                   "fields": {
+                    "VAR": {
+                     "name": "probs"
+                    }
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_say",
+                  "inputs": {
+                   "TEXT": {
+                    "shadow": {
+                     "type": "text",
+                     "fields": {
+                      "TEXT": "Hello!"
+                     }
+                    },
+                    "block": {
+                     "type": "text_join",
+                     "inputs": {
+                      "ADD0": {
+                       "block": {
+                        "type": "text",
+                        "fields": {
+                         "TEXT": "I think that's a "
+                        }
+                       }
+                      },
+                      "ADD1": {
+                       "block": {
+                        "type": "nb_o_name",
+                        "inputs": {
+                         "CHOICE": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 0
+                           }
+                          },
+                          "block": {
+                           "type": "nb_o_pick",
+                           "fields": {
+                            "HOW": "best"
+                           },
+                           "inputs": {
+                            "PROBS": {
+                             "block": {
+                              "type": "variables_get",
+                              "fields": {
+                               "VAR": {
+                                "name": "probs"
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     },
+                     "extraState": {
+                      "itemCount": 2
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 680,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
     "text": "Swap MNIST for Fashion-MNIST (clothes) or CIFAR-10 (colour photos) in the dropdown. CIFAR-10 needs a bigger network and more epochs — a nice job for a cloud GPU (File ▸ Export cloud GPU bundle).",
-    "x": 760,
-    "y": 40,
-    "width": 330,
-    "height": 140
+    "width": 360,
+    "height": 120,
+    "x": 680,
+    "y": 571
    }
   ]
  }

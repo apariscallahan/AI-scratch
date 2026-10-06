@@ -40,6 +40,7 @@ export function loadProject(data, { file = null, fromExample = false } = {}) {
   project.file = file;
   setDirty(false);
   autosave();
+  bus.emit('project:loaded', data);
   if (fromExample && data.description) toast(`Loaded “${data.name}”. ${data.minutes ? `Takes about ${data.minutes} min on a laptop.` : ''}`, 'ok', 4200);
 }
 
@@ -227,16 +228,22 @@ export async function targetsDialog() {
 export function helpDialog() {
   modal({
     title: '👋 Welcome to NeuroBlocks', wide: true,
-    body: `<p><b>NeuroBlocks</b> is like Scratch, but for building artificial intelligence. Snap blocks together under
-      <b>when ▶ clicked</b>, press <b>Run</b>, and watch your model learn.</p>
-      <div class="help-block"><b>The usual recipe</b><ol style="margin:6px 0 0">
+    body: `<p><b>NeuroBlocks</b> is like Scratch, but for building artificial intelligence. A project has two stacks,
+      joined by a wire: one that <b>trains</b> a model and one that <b>uses</b> it.</p>
+      <div class="help-block"><b>1 · Training</b> — under the yellow <b>start training when ▶ clicked</b><ol style="margin:6px 0 0">
         <li><b>Data</b> — load or make a dataset (toy dots, tables, images, text…)</li>
         <li><b>Neural Nets / Layers</b> — build a model by stacking layers (or use a ready-made GPT)</li>
-        <li><b>Training</b> — <i>train model on data</i>, with settings inside it</li>
-        <li><b>Test & Play</b> — test it, see predictions, draw for it, chat with it</li></ol></div>
+        <li><b>Training</b> — <i>train model on data</i>, with settings inside it; <b>Test</b> — how good is it?</li>
+        <li>End the stack with <b>📦 weights of trained …</b> (from <b>Output</b>): that's what training produces.</li></ol></div>
+      <div class="help-block"><b>2 · Output</b> — drag a wire from the 📦 block's <b>●</b> to the <b>○</b> of a teal
+        <b>start output</b> block, then build what the trained model should do, step by step. For a GPT: turn text into
+        <i>tokens</i>, get <i>scores for the next token</i>, turn them into <i>probabilities</i>, <i>pick</i> one, add it,
+        repeat. Results appear in the <b>Output</b> tab. Output stacks run after training has finished.</div>
       <div class="help-block"><b>Simulations</b>: build a world (a car on rough terrain, a rocket, a maze…), give it abilities,
-        senses and rewards, then <i>train model to play in world</i>. Replays show up in the <b>Sim</b> tab.</div>
+        senses and rewards, then <i>train model to play in world</i>. Its output stack senses → runs the model → acts.
+        Replays show up in the <b>Sim</b> tab.</div>
       <div class="help-block"><b>Tips</b><ul style="margin:6px 0 0">
+        <li>Wires: drag from a <b>○</b> to unplug or move a wire; double-click a wire to remove it.</li>
         <li>Right-click a block → <i>What does this block do?</i></li>
         <li>Blocks only fit where they make sense — settings go <i>inside</i> the block they configure.</li>
         <li><b>quick test</b> runs every training for just a few steps, to check everything works.</li>

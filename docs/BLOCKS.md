@@ -4,7 +4,7 @@
 
 | block | what it does |
 |---|---|
-| `when [flag] clicked` | Like Scratch's green flag: everything stacked under this block runs, top to bottom, when you press Run. You can have several of these; they run one after another from the top of the workspace down. |
+| `start training when [flag] clicked` | Like Scratch's green flag: everything stacked under this block runs, top to bottom, when you press Run. This is where a model learns. To USE the trained model, end this stack with '📦 weights of trained …' (from Output), wire it to a '○ start output' block, and build the output stack under that. You can have several training stacks; they run one after another from the top of the workspace down, and all output stacks run after them. |
 | `use device [device] random seed [seed]` | 'auto' picks an NVIDIA GPU if there is one, then an Apple GPU, then the CPU. A seed makes random things (initial weights, shuffling, terrain) the same every run. On the command line, --device overrides this block. |
 | `every [n] [unit] do [do]` | Goes inside a 'train' block. The blocks inside run every N steps (or epochs), so you can watch the model improve as it learns. |
 
@@ -103,7 +103,7 @@
 | `save the best version to file [file]` | Whenever the test score improves, save the model. |
 | `[which] of [model]` | A number from the model's training history (use it in 'say', charts or 'check that'). |
 
-## Test & Play
+## Test
 
 | block | what it does |
 |---|---|
@@ -113,13 +113,39 @@
 | `show predictions of [model] on [n] examples from [data]` | See what the model guesses for some test examples (green = right, red = wrong). |
 | `show confusion matrix of [model] on [data]` | A grid showing which classes get mixed up with which. |
 | `show decision map of [model] on [data]` | Colour the whole plane by the model's prediction (for 2-D toy data). Put it in 'every N steps' to watch the boundary form. |
-| `prediction of [model] for [input]` | Ask the model about one example: a list of numbers, or a text. |
-| `write [length] tokens with [model] starting with [prompt] creativity [temp]` | Let a language model write. Creativity (temperature): 0 = always the most likely token, 1 = adventurous, 2 = chaotic. |
-| `text written by [model] starting with [prompt] length [length]` | The text a language model writes (as a value you can 'say' or store). |
-| `show [n] new pictures from [model] of class [class]` | Ask a picture generator to invent new pictures (class 'any', or a class name such as 7 or sneaker). |
-| `let me prompt [model]` | Opens a prompt box in the Play tab so you can type and see what the model writes. |
-| `let me draw for [model]` | Opens a drawing pad in the Play tab: draw a digit (or anything) and see the model's guesses live. |
-| `let me type inputs for [model]` | Opens a form in the Play tab: type values for each input and get a prediction. |
+| `preview: [model] writes [length] tokens after [prompt] creativity [temp]` | This does the whole writing loop in one go, so you can see progress during training. The output stack shows what happens inside: tokens → scores for the next token → probabilities → pick one → repeat. Creativity is the temperature: 0 = always the most likely token, 1 = adventurous, 2 = chaotic. |
+| `preview: show [n] new pictures from [model] of class [class]` | A quick look at the pictures a generator invents so far (class 'any', or a class name such as 7 or sneaker). To really use it, build an output stack: noise → picture. |
+
+## Output
+
+| block | what it does |
+|---|---|
+| `📦 weights of trained [model] ●` | Training changes millions of numbers inside the model, called weights. This block packs them up, together with everything needed to use them: for a language model the tokenizer (how text becomes numbers) and how many tokens it can see; for a classifier the class names and how inputs were scaled. For classic models (like trees) it holds the learned rules, and for simulations the policy. Nothing can go below it: it is the end of training. Wire it to a 'start output' block to use the model. |
+| `○ start output` | Output is how a trained model gets used. Training (the yellow stack) changes the model's weights; the 📦 block at its bottom hands them over through the wire. Under this block you build the output step by step, the way real AI programs do: turn your input into numbers the model understands (tokens, or a list of numbers), run the model to get scores, turn the scores into probabilities, pick a choice, and turn the choice back into text, a name or an action. Results appear in the Output tab. |
+| `tokens of [text]` | A model can't read letters, only numbers. The tokenizer (made when the text dataset was loaded) gives every character, word or word-piece a number. 'tokens of "hi!"' with character tokens might be [46, 47, 2]. Store the result in a variable — it's a list you can add new tokens to. |
+| `text of tokens [tokens]` | Turn tokens (numbers) back into text — the opposite of 'tokens of'. Works with a list or one token. |
+| `scores for the next token after [tokens]` | This is the one thing a GPT really does: look at the tokens so far and score every possible next token (these raw scores are called logits). Writing a story is just this, again and again: score, pick a token, add it, repeat. The model can only look back a fixed number of tokens (its context length) — older tokens are left out automatically. |
+| `run the model on [input]` | What you give it depends on what the model learned: a list of numbers for tables and toy data (e.g. [5.1, 3.5, 1.4, 0.2]), a text for a text classifier, a picture (from 'ask for a drawing') for an image model, tokens for a language model, or the senses of a simulation. Inputs are scaled the same way as the training data. Classifiers answer with one score per class — turn them into probabilities next. Number predictors answer with the number(s) directly. |
+| `probabilities from scores [scores] temperature [temp]` | Each score is turned into e^(score ÷ temperature), then everything is divided by the total so it adds up to 1 (100%). Temperature 0 puts 100% on the highest score. For language models, low temperature gives safe, repetitive text and high temperature gives creative nonsense. |
+| `pick [how] choice from [probs]` | Choices are numbered from 0, like token numbers and class numbers. Picking at random is called sampling — it's why a chatbot can answer the same question differently each time. Use 'name of choice' to see what a choice means. |
+| `name of choice [choice]` | What a choice number means: the token's text for a language model, the class name for a classifier, the action for a simulation. |
+| `chance of choice [choice] in [probs]` | The probability (0 to 1) of one choice. Choices are numbered from 0. |
+| `show the top [n] choices in [probs]` | A bar chart (Output tab) of the most likely choices with their names. Inside a loop it updates live, so you can watch a language model make up its mind. |
+| `the model's [what]` | A fact about the wired model, e.g. how many tokens it can look back at. |
+| `ask [question] and wait` | Show a question with a text box in the Output tab and wait for your answer (like Scratch's 'ask and wait'). The text goes into 'answer'. |
+| `ask for a drawing [question] and wait` | Show a drawing pad in the Output tab and wait. Your drawing goes into 'answer' as a picture you can run an image model on. |
+| `answer` | What you typed (or drew) for the last 'ask'. Empty if nothing was asked yet. |
+| `show [text] as output` | Write text into the Output tab. Used again and again in a loop it updates the same box, so generated text appears token by token. |
+| `random noise for the picture generator` | A VAE or GAN learns to turn a handful of random numbers (the 'noise' or 'latent code') into a picture. Change one number a little and the picture changes a little — try it! |
+| `picture drawn from noise [noise] as class [class]` | Run the picture generator: it turns the noise into a new picture. Class 'any' picks one, or ask for a class such as 7 or sneaker. |
+| `show picture [pic]` | Show a picture in the Output tab (a drawing, a generated picture, or what an autoencoder rebuilt). |
+| `start a new try in [world]` | A trained driver (or pilot, or bird) acts in a loop: look at what it senses, run the model to get scores for each action, do the best action, and repeat until the try is over. |
+| `what the model senses` | The list of numbers the world gives the model right now (speed, tilt, ground radar …). |
+| `action from scores [scores]` | Turn the model's scores into an action: the highest-scoring choice, or for steering-like controls each score squashed into -1 … 1. |
+| `do action [action]` | Move the world forward one moment with this action. |
+| `this try is over` | True when the try has ended (crashed, finished, or ran out of time). |
+| `show the replay of this try` | Send the recorded try to the Sim tab as a replay. |
+| `[what] of this try` | How the current try is going. |
 
 ## Simulations
 
@@ -146,7 +172,7 @@
 | `name this run [label]` | The name used for this run's lines in the charts. |
 | `watch [model] play in [world] [n] times` | Replay the trained model in the world (Sim tab). |
 | `show [world]` | Preview the world in the Sim tab before training. |
-| `let me play [world]` | Control the world yourself with the arrow keys (Play tab). Can you beat the AI? |
+| `let me play [world]` | Control the world yourself with the arrow keys (Output tab). Can you beat the AI? |
 | `average score of [model] in [world] over [n] tries` | Total reward per try, averaged (no randomness in the model's choices). |
 
 ## World Parts

@@ -208,6 +208,14 @@ def cmd_bundle(a):
 # ---------------------------------------------------------------------------
 
 
+def _arg_text(spec, name: str) -> str:
+    from .compiler.spec import Port
+    arg = spec.args.get(name)
+    if isinstance(arg, Port):
+        return "●" if arg.direction == "out" else "○"
+    return f"[{name.lower()}]"
+
+
 def cmd_blocks(a):
     from .compiler.spec import CATEGORIES, REGISTRY
     from .compiler import blocks  # noqa: F401
@@ -215,7 +223,7 @@ def cmd_blocks(a):
     cats = sorted(CATEGORIES.values(), key=lambda c: c.order)
     lines = ["# NeuroBlocks block reference", ""] if a.markdown else []
     for cat in cats:
-        specs = [s for s in REGISTRY.values() if s.category == cat.key]
+        specs = [s for s in REGISTRY.values() if s.category == cat.key and s.toolbox]  # hidden = old blocks
         if not specs:
             continue
         lines.append(f"## {cat.name}" if a.markdown else f"\n[{cat.name}]")
@@ -224,7 +232,7 @@ def cmd_blocks(a):
             lines.append("| block | what it does |")
             lines.append("|---|---|")
         for s in sorted(specs, key=lambda s: s.order):
-            msg = re.sub(r"%([A-Z_0-9]+)", lambda m: f"[{m.group(1).lower()}]", s.message).replace("\n", " ")
+            msg = re.sub(r"%([A-Z_0-9]+)", lambda m: _arg_text(s, m.group(1)), s.message).replace("\n", " ")
             desc = (s.help or s.tooltip).replace("|", "\\|")
             lines.append(f"| `{msg}` | {desc} |" if a.markdown else f"  {msg}  —  {s.tooltip}")
         if a.markdown:

@@ -66,15 +66,140 @@ def stack(blocks, x=40, y=40):
     return head
 
 
-def comment(text, x, y, w=300, h=120):
-    return {"text": text, "x": x, "y": y, "width": w, "height": h}
+def comment(text, w=380, h=120, below="output"):
+    """A note, placed automatically below the output stack (or below / beside the training stack)."""
+    return {"text": text, "width": w, "height": h, "_below": below}
+
+
+def setv(name, value):
+    return B("variables_set", VAR={"name": name}, VALUE=value)
+
+
+def until(cond, body):
+    return B("controls_whileUntil", MODE="UNTIL", BOOL=cond, DO=body)
+
+
+def is_empty(value):
+    return B("logic_compare", OP="EQ", A=value, B=txt(""))
+
+
+def nums(*values):
+    return lst(*values)
+
+
+# --- training → output -------------------------------------------------------------------
+def weights(model):
+    """The 📦 block that ends a training stack (the output stack's wire starts here)."""
+    return B("nb_weights", _id="weights", MODEL=model)
+
+
+def output(*blocks):
+    """An output stack, wired to the 📦 weights block."""
+    return [B("nb_when_output", _id="output", PORT="weights")] + list(blocks)
+
+
+def write_tokens(n, temp, top=5):
+    """The language-model loop: score the next token, turn scores into probabilities, pick one, add it."""
+    return B("controls_repeat_ext", TIMES=num(n), DO=[
+        setv("scores", B("nb_o_next", TOKENS=var("tokens"))),
+        setv("probs", B("nb_o_probs", SCORES=var("scores"), TEMP=temp)),
+        setv("next token", B("nb_o_pick", HOW="random", PROBS=var("probs"))),
+        B("nb_list_add", ITEM=var("next token"), VAR={"name": "tokens"}),
+        B("nb_o_show_text", TEXT=B("nb_o_text", TOKENS=var("tokens"))),
+        B("nb_o_show_top", N=top, PROBS=var("probs")),
+    ])
+
+
+def story_output(first_prompt, n, temp, question):
+    return output(
+        setv("prompt", txt(first_prompt)),
+        until(is_empty(var("prompt")), [
+            setv("tokens", B("nb_o_tokens", TEXT=var("prompt"))),
+            write_tokens(n, temp),
+            B("nb_o_ask", QUESTION=txt(question)),
+            setv("prompt", B("nb_o_answer")),
+        ]),
+    )
+
+
+def classify(input_block, n_top, what="It's"):
+    """input → scores → probabilities → the most likely choice → its name."""
+    return [
+        setv("scores", B("nb_o_run", INPUT=input_block)),
+        setv("probs", B("nb_o_probs", SCORES=var("scores"), TEMP=1)),
+        B("nb_o_show_top", N=n_top, PROBS=var("probs")),
+        say(f"{what} ", B("nb_o_name", CHOICE=B("nb_o_pick", HOW="best", PROBS=var("probs")))),
+    ]
+
+
+def drawing_output(question, times=5):
+    return output(B("controls_repeat_ext", TIMES=num(times), DO=[
+        B("nb_o_ask_draw", QUESTION=txt(question)),
+        *classify(B("nb_o_answer"), 3, "I think that's a"),
+    ]))
+
+
+def play_output(world, result="score", play=False):
+    """Sense → run the model → act, until the try is over (a trained policy driving)."""
+    blocks = [
+        B("nb_o_try", WORLD=world),
+        until(B("nb_o_over"), [
+            setv("senses", B("nb_o_senses")),
+            setv("scores", B("nb_o_run", INPUT=var("senses"))),
+            B("nb_o_do", ACTION=B("nb_o_action", SCORES=var("scores"))),
+        ]),
+        B("nb_o_try_show"),
+        say(f"{'Distance' if result == 'distance' else 'Score'} of this try: ",
+            rnd(B("nb_o_try_stat", WHAT=result), 1)),
+    ]
+    if play:
+        blocks.append(B("nb_rl_play", WORLD=world))
+    return output(*blocks)
 
 
 EXAMPLES = []
 
+# How big each example's stacks are when the editor draws them (workspace units): training (w, h) and
+# output (w, h). The output stack goes to the right of the training stack, with room for the wire, and
+# notes go underneath, so nothing overlaps. After changing an example a lot, re-measure in the editor:
+# load it and read Blockly.getMainWorkspace().getTopBlocks().map(b => b.getBoundingRectangle()).
+SIZES = {
+    "01_spirals": (785, 1273, 633, 457), "02_iris_tree": (840, 1161, 622, 553), "03_curve": (402, 913, 962, 377),
+    "04_lr_sweep": (1247, 1305, 0, 0), "05_digits_cnn": (528, 1073, 656, 481), "06_mnist": (493, 1121, 656, 481),
+    "07_autoencoder": (555, 857, 694, 257), "07b_generate_digits": (557, 537, 579, 305),
+    "08_tiny_gpt": (714, 729, 669, 761), "09_shakespeare_gpt": (652, 1121, 669, 761),
+    "10_names": (460, 913, 669, 761), "11_sentiment": (607, 881, 656, 585), "12_finetune_gpt2": (620, 657, 669, 761),
+    "13_compare_classic": (763, 1577, 0, 0), "14_clusters": (497, 697, 0, 0), "15_forecast": (542, 793, 0, 0),
+    "20_car_ppo": (789, 1617, 522, 569), "21_car_evolution": (519, 1409, 522, 521), "22_cartpole": (312, 641, 600, 569),
+    "23_maze": (308, 713, 600, 569), "24_lander": (297, 737, 600, 569), "25_flappy": (298, 689, 600, 569),
+    "26_custom_reward": (925, 1153, 522, 521),
+}
+WIRE_GAP = 140  # room between the stacks for the wire
 
-def example(id, name, category, level, minutes, order, description, blocks, comments=(), extra_stacks=()):
-    ws = {"blocks": {"languageVersion": 0, "blocks": [stack(blocks)] + list(extra_stacks)}}
+
+def _layout(id, comments, has_output):
+    tw, th, ow, oh = SIZES.get(id, (700, 900, 600, 600))
+    out_x = 40 + -(-(tw + WIRE_GAP) // 20) * 20
+    free = {"output": [out_x, 40 + oh + 50], "training": [40, 40 + th + 50], "right": [40 + tw + 60, 40]}
+    placed = []
+    for c in comments:
+        c = dict(c)
+        where = c.pop("_below")
+        if where == "output" and not has_output:
+            where = "right"
+        c["x"], c["y"] = free[where]
+        free[where][1] += c["height"] + 30
+        placed.append(c)
+    return out_x, placed
+
+
+def example(id, name, category, level, minutes, order, description, blocks, comments=(), extra_stacks=(),
+            outputs=None):
+    out_x, comments = _layout(id, comments, bool(outputs))
+    tops = [stack(blocks)]
+    if outputs:
+        tops.append(stack(outputs, out_x, 40))
+    ws = {"blocks": {"languageVersion": 0, "blocks": tops + list(extra_stacks)}}
     if comments:
         ws["workspaceComments"] = list(comments)
     EXAMPLES.append({"format": "neuroblocks-project", "version": 1, "name": name, "description": description,
@@ -101,9 +226,15 @@ example(
         B("nb_evaluate", MODEL="model", DATA="data"),
         say("Test accuracy: ", pct(score("model", "data")), "%"),
         B("nb_check", VALUE=score("model", "data"), OP=">=", TARGET=0.9),
+        weights("model"),
     ],
-    comments=[comment("Try this: change the number of layers or units, the activation (ReLU → tanh), the noise, or the "
-                      "dataset (moons, circles, XOR…). Then press Run again and compare the decision maps!", 720, 40, 320, 130)],
+    outputs=output(
+        setv("point", nums(0.5, -0.5)),
+        *classify(var("point"), 2, "The point (0.5, -0.5) belongs to the spiral:"),
+    ),
+    comments=[comment("Output: the trained network gets two numbers (a point), gives each spiral a score, the scores "
+                      "become probabilities, and the most likely spiral wins. Change the point and run again!\n\n"
+                      "Also try: more or fewer layers, tanh instead of ReLU, more noise, or the moons / XOR data.", w=380, h=170)],
 )
 
 example(
@@ -124,7 +255,15 @@ example(
             pct(score("neighbours", "flowers")), "%"),
         B("nb_decision_map", MODEL="tree", DATA="flowers"),
         B("nb_check", VALUE=score("tree", "flowers"), OP=">=", TARGET=0.85),
+        weights("tree"),
     ],
+    outputs=output(
+        setv("flower", nums(5.1, 3.5, 1.4, 0.2)),
+        *classify(var("flower"), 3, "This flower is probably a"),
+    ),
+    comments=[comment("The flower's four measurements (sepal length, sepal width, petal length, petal width) go "
+                      "through the tree's questions. A tree is sure of itself, so one species gets almost 100%. "
+                      "Try other measurements, e.g. 6.7, 3.0, 5.2, 2.3.", w=360, h=130)],
 )
 
 example(
@@ -140,8 +279,17 @@ example(
             B("nb_t_epochs", N=120), B("nb_t_optimizer", OPT="adam", LR=0.01),
             B("nb_t_every", N=10, UNIT="epochs", DO=[B("nb_decision_map", MODEL="model", DATA="data")])]),
         B("nb_evaluate", MODEL="model", DATA="data"),
-        say("A prediction for x = 1: ", B("nb_predict", MODEL="model", INPUT=lst(1))),
+        weights("model"),
     ],
+    outputs=output(
+        B("controls_for", VAR={"name": "x"}, FROM=num(-3), TO=num(3), BY=num(0.25), DO=[
+            B("nb_chart_point", X=var("x"), Y=B("nb_o_run", INPUT=var("x")), CHART=txt("What the model learned"),
+              SERIES=txt("model's answer")),
+        ]),
+        say("For x = 1 the model answers ", rnd(B("nb_o_run", INPUT=num(1)), 3), " (the real curve: 0.997)"),
+    ),
+    comments=[comment("A model that predicts numbers answers with the number itself — no probabilities needed. "
+                      "The loop asks it about x = -3 … 3 and draws its answers on the Charts tab.", w=360, h=110)],
 )
 
 example(
@@ -162,8 +310,7 @@ example(
         ]),
     ],
     comments=[comment("Each pass of the loop builds a fresh network and trains it with a different learning rate. "
-                      "Too big = chaos, too small = barely learns. Look at the loss chart: every run gets its own line.",
-                      760, 40, 330, 130)],
+                      "Too big = chaos, too small = barely learns. Look at the loss chart: every run gets its own line.", w=330, h=130)],
 )
 
 # =========================================================================================
@@ -185,8 +332,12 @@ example(
         B("nb_evaluate", MODEL="cnn", DATA="digits"),
         B("nb_show_predictions", MODEL="cnn", N=24, DATA="digits"),
         B("nb_check", VALUE=score("cnn", "digits"), OP=">=", TARGET=0.9),
-        B("nb_play_draw", MODEL="cnn"),
+        weights("cnn"),
     ],
+    outputs=drawing_output("Draw a digit from 0 to 9 (big, in the middle)", 5),
+    comments=[comment("Output: your drawing is shrunk to 8×8 pixels like the training pictures, the network gives "
+                      "each digit 0–9 a score, and the scores become probabilities. Draw a sloppy 7 — is the model "
+                      "still sure?", w=360, h=120)],
 )
 
 example(
@@ -205,11 +356,11 @@ example(
         B("nb_evaluate", MODEL="cnn", DATA="mnist"),
         B("nb_show_predictions", MODEL="cnn", N=32, DATA="mnist"),
         B("nb_save", MODEL="cnn", FILE=txt("mnist_cnn.pt")),
-        B("nb_play_draw", MODEL="cnn"),
+        weights("cnn"),
     ],
+    outputs=drawing_output("Draw a digit from 0 to 9", 5),
     comments=[comment("Swap MNIST for Fashion-MNIST (clothes) or CIFAR-10 (colour photos) in the dropdown. CIFAR-10 "
-                      "needs a bigger network and more epochs — a nice job for a cloud GPU (File ▸ Export cloud GPU bundle).",
-                      760, 40, 330, 140)],
+                      "needs a bigger network and more epochs — a nice job for a cloud GPU (File ▸ Export cloud GPU bundle).", w=360, h=120)],
 )
 
 example(
@@ -225,7 +376,12 @@ example(
             B("nb_t_epochs", N=60), B("nb_t_optimizer", OPT="adam", LR=0.003), B("nb_t_goal", GOAL="reconstruct")]),
         B("nb_show_predictions", MODEL="autoencoder", N=16, DATA="digits"),
         B("nb_data_map", DATA="digits", METHOD="tsne"),
+        weights("autoencoder"),
     ],
+    outputs=output(B("controls_repeat_ext", TIMES=num(3), DO=[
+        B("nb_o_ask_draw", QUESTION=txt("Draw a digit — it gets squeezed into 8 numbers and rebuilt")),
+        B("nb_o_show_pic", PIC=B("nb_o_run", INPUT=B("nb_o_answer"))),
+    ])),
 )
 
 example(
@@ -239,11 +395,19 @@ example(
         B("nb_train", MODEL="artist", DATA="mnist", SETTINGS=[
             B("nb_t_epochs", N=8), B("nb_t_batch", N=128)]),
         B("nb_gen_show", N=32, MODEL="artist", CLASS=txt("any")),
-        B("nb_gen_show", N=16, MODEL="artist", CLASS=txt("7")),
         B("nb_save", MODEL="artist", FILE=txt("digit_artist.pt")),
+        weights("artist"),
     ],
-    comments=[comment("Switch VAE to GAN for sharper (but less predictable) pictures — give a GAN more epochs. "
-                      "Try Fashion-MNIST to invent clothes, or your own image folder!", 720, 40, 320, 110)],
+    outputs=output(
+        setv("noise", B("nb_o_noise")),
+        B("controls_for", VAR={"name": "digit"}, FROM=num(0), TO=num(9), BY=num(1), DO=[
+            B("nb_o_show_pic", PIC=B("nb_o_picture", NOISE=var("noise"), CLASS=var("digit"))),
+        ]),
+        say("Same noise, ten different digits: the noise decides the handwriting style. Run again for new noise!"),
+    ),
+    comments=[comment("Output: a generator turns a few random numbers (noise) into a picture. Here the SAME noise is "
+                      "drawn as every digit 0–9, so all ten share one handwriting style.\n\n"
+                      "Switch VAE to GAN for sharper (but less predictable) pictures — give a GAN more epochs.", w=370, h=150)],
 )
 
 # =========================================================================================
@@ -262,12 +426,18 @@ example(
             B("nb_t_steps", N=1500), B("nb_t_batch", N=32), B("nb_t_optimizer", OPT="adamw", LR=0.002),
             B("nb_t_every", N=300, UNIT="steps", DO=[
                 B("nb_generate", LENGTH=150, MODEL="gpt", PROMPT=txt("Once upon a time"), TEMP=0.8)])]),
-        B("nb_generate", LENGTH=400, MODEL="gpt", PROMPT=txt("One day, Max"), TEMP=0.7),
-        B("nb_play_chat", MODEL="gpt"),
+        weights("gpt"),
     ],
-    comments=[comment("A GPT reads characters and learns to guess the next one. 'layers' = depth, 'heads' = how many "
-                      "things it pays attention to at once, 'embedding size' = width. Bigger = smarter but slower.",
-                      760, 40, 330, 130)],
+    outputs=story_output("One day, Max", 300, 0.7, "Start another story! Type its first words (or leave it empty "
+                                                    "to stop)"),
+    comments=[comment("How a GPT writes: turn the prompt into tokens (numbers), let the model score every possible "
+                      "next token, turn the scores into probabilities, pick one at random, add it — and repeat. "
+                      "Watch the bar chart: that's the model making up its mind, one character at a time.\n\n"
+                      "Try: temperature 0.2 (safe, repetitive) or 1.5 (wild). 'pick the most likely' instead of "
+                      "'a random' makes it always write the same thing.", w=420, h=190),
+              comment("Training: a GPT reads characters and learns to guess the next one. 'layers' = depth, 'heads' = "
+                      "how many things it pays attention to at once, 'embedding size' = width. Bigger = smarter but "
+                      "slower.", w=380, h=120, below="training")],
 )
 
 example(
@@ -290,15 +460,15 @@ example(
             B("nb_t_schedule", SCHED="cosine", WARM=100),
             B("nb_t_every", N=500, UNIT="steps", DO=[
                 B("nb_generate", LENGTH=200, MODEL="gpt", PROMPT=txt("ROMEO:"), TEMP=0.8)])]),
-        B("nb_generate", LENGTH=600, MODEL="gpt", PROMPT=txt("JULIET:"), TEMP=0.8),
         B("nb_save", MODEL="gpt", FILE=txt("shakespeare_gpt.pt")),
-        B("nb_play_chat", MODEL="gpt"),
+        weights("gpt"),
     ],
+    outputs=story_output("JULIET:", 500, 0.8, "Who speaks next? Type a name like HAMLET: (or leave it empty to stop)"),
     comments=[comment("These settings fit a laptop CPU. On a cloud GPU (File ▸ Export cloud GPU bundle), run:\n"
                       "bash run.sh --set layers=6 --set embedding=384 --set context=256 --set batch=64 "
                       "--set steps=5000\n"
                       "That is about the size of nanoGPT's Shakespeare model — it writes convincing fake Shakespeare. "
-                      "The trained model comes back as models/shakespeare_gpt.pt.", 780, 40, 380, 190)],
+                      "The trained model comes back as models/shakespeare_gpt.pt.", w=400, h=190)],
 )
 
 example(
@@ -315,9 +485,11 @@ example(
             B("nb_l_layernorm"), B("nb_l_output")]),
         B("nb_train", MODEL="namer", DATA="names", SETTINGS=[
             B("nb_t_steps", N=2000), B("nb_t_batch", N=64), B("nb_t_optimizer", OPT="adamw", LR=0.003)]),
-        B("nb_generate", LENGTH=300, MODEL="namer", PROMPT=txt("\n"), TEMP=0.9),
-        B("nb_generate", LENGTH=120, MODEL="namer", PROMPT=txt("\nmar"), TEMP=0.8),
+        weights("namer"),
     ],
+    outputs=story_output("\n", 200, 0.9, "Type the first letters of a name, e.g. mar (or leave it empty to stop)"),
+    comments=[comment("Every name in the training data ends with a new line (⏎), so the model learned to write "
+                      "⏎ when a name is finished. Starting from ⏎ means: begin a brand-new name.", w=380, h=110)],
 )
 
 example(
@@ -334,10 +506,18 @@ example(
             B("nb_t_epochs", N=6), B("nb_t_batch", N=32), B("nb_t_optimizer", OPT="adam", LR=0.003)]),
         B("nb_evaluate", MODEL="reader", DATA="reviews"),
         B("nb_show_predictions", MODEL="reader", N=12, DATA="reviews"),
-        say("“The movie was not boring at all” → ",
-            B("nb_predict", MODEL="reader", INPUT=txt("The movie was not boring at all"))),
-        B("nb_play_form", MODEL="reader"),
+        weights("reader"),
     ],
+    outputs=output(
+        setv("review", txt("The movie was not boring at all")),
+        until(is_empty(var("review")), [
+            *classify(var("review"), 2, "I think this review is"),
+            B("nb_o_ask", QUESTION=txt("Write your own movie review (or leave it empty to stop)")),
+            setv("review", B("nb_o_answer")),
+        ]),
+    ),
+    comments=[comment("The review is split into word tokens, the transformer reads them all at once and gives "
+                      "'positive' and 'negative' a score each. Tricky ones: 'not bad', 'I expected to hate it'.", w=360, h=110)],
 )
 
 example(
@@ -352,9 +532,12 @@ example(
         B("nb_generate", LENGTH=80, MODEL="gpt2", PROMPT=txt("ROMEO:"), TEMP=0.8),
         B("nb_train", MODEL="gpt2", DATA="shakespeare", SETTINGS=[
             B("nb_t_steps", N=var("steps")), B("nb_t_batch", N=8), B("nb_t_optimizer", OPT="adamw", LR=0.00005)]),
-        B("nb_generate", LENGTH=200, MODEL="gpt2", PROMPT=txt("ROMEO:"), TEMP=0.8),
         B("nb_save", MODEL="gpt2", FILE=txt("gpt2_shakespeare.pt")),
+        weights("gpt2"),
     ],
+    outputs=story_output("ROMEO:", 120, 0.8, "Type the start of a text (or leave it empty to stop)"),
+    comments=[comment("GPT-2 knows 50,257 tokens — whole words and word pieces instead of single characters — so "
+                      "the bar chart shows word pieces. The output loop is exactly the same as for a tiny GPT.", w=380, h=110)],
 )
 
 # =========================================================================================
@@ -452,14 +635,17 @@ example(
         B("nb_rl_train", MODEL="driver", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="ppo"), B("nb_rl_steps", N=150000), B("nb_rl_parallel", N=8),
             B("nb_rl_replay", N=5)]),
-        B("nb_rl_watch", MODEL="driver", WORLD="world", N=3),
         say("Average score: ", rnd(B("nb_rl_score", MODEL="driver", WORLD="world", N=5), 1)),
         B("nb_save", MODEL="driver", FILE=txt("car_driver.pt")),
-        B("nb_rl_play", WORLD="world"),
+        weights("driver"),
     ],
-    comments=[comment("Things to try: make the terrain 'steps' or 'mixed', add 'can jump' or 'can rocket boost', "
+    outputs=play_output("world", "distance", play=True),
+    comments=[comment("Output: the trained driver senses the world (speed, tilt, ground radar …), runs those numbers "
+                      "through its network to score each action, does the action, and repeats until the try is over. "
+                      "Then it's your turn with the arrow keys!", w=380, h=130),
+              comment("Things to try: make the terrain 'steps' or 'mixed', add 'can jump' or 'can rocket boost', "
                       "remove a sense and see if it still learns, change the rewards (reward speed? punish energy?), "
-                      "or switch 'same world every try' off so it must handle any terrain.", 800, 40, 340, 150)],
+                      "or switch 'same world every try' off so it must handle any terrain.", w=380, h=130)],
 )
 
 example(
@@ -474,8 +660,9 @@ example(
         B("nb_rl_train", MODEL="driver", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="evolution"), B("nb_rl_generations", N=25), B("nb_rl_population", N=40),
             B("nb_rl_mutation", S=0.1), B("nb_rl_replay", N=2)]),
-        B("nb_rl_watch", MODEL="driver", WORLD="world", N=1),
+        weights("driver"),
     ],
+    outputs=play_output("world", "distance"),
 )
 
 example(
@@ -489,9 +676,9 @@ example(
                                                B("nb_l_output")]),
         B("nb_rl_train", MODEL="balancer", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="ppo"), B("nb_rl_steps", N=50000)]),
-        B("nb_rl_watch", MODEL="balancer", WORLD="world", N=2),
-        B("nb_rl_play", WORLD="world"),
+        weights("balancer"),
     ],
+    outputs=play_output("world", "score", play=True),
 )
 
 example(
@@ -505,9 +692,12 @@ example(
         B("nb_model", NAME="explorer", LAYERS=[]),
         B("nb_rl_train", MODEL="explorer", WORLD="maze", SETTINGS=[
             B("nb_rl_algo", ALGO="qtable"), B("nb_rl_steps", N=30000)]),
-        B("nb_rl_watch", MODEL="explorer", WORLD="maze", N=1),
-        B("nb_rl_play", WORLD="maze"),
+        weights("explorer"),
     ],
+    outputs=play_output("maze", "score", play=True),
+    comments=[comment("A Q-table has no neural network: for every square it stores a score for each move (up, down, "
+                      "left, right). 'run the model on' looks up the row for the square it senses, and the action "
+                      "is the move with the highest score.", w=380, h=130)],
 )
 
 example(
@@ -520,9 +710,9 @@ example(
                                             B("nb_l_output")]),
         B("nb_rl_train", MODEL="pilot", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="ppo"), B("nb_rl_steps", N=300000), B("nb_rl_parallel", N=8)]),
-        B("nb_rl_watch", MODEL="pilot", WORLD="world", N=3),
-        B("nb_rl_play", WORLD="world"),
+        weights("pilot"),
     ],
+    outputs=play_output("world", "score", play=True),
 )
 
 example(
@@ -534,9 +724,9 @@ example(
         B("nb_model", NAME="bird", LAYERS=[B("nb_l_dense", UNITS=16, ACT="tanh"), B("nb_l_output")]),
         B("nb_rl_train", MODEL="bird", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="evolution"), B("nb_rl_generations", N=25), B("nb_rl_population", N=50)]),
-        B("nb_rl_watch", MODEL="bird", WORLD="world", N=2),
-        B("nb_rl_play", WORLD="world"),
+        weights("bird"),
     ],
+    outputs=play_output("world", "score", play=True),
 )
 
 example(
@@ -560,8 +750,9 @@ example(
                                              B("nb_l_output")]),
         B("nb_rl_train", MODEL="driver", WORLD="world", SETTINGS=[
             B("nb_rl_algo", ALGO="ppo"), B("nb_rl_steps", N=150000)]),
-        B("nb_rl_watch", MODEL="driver", WORLD="world", N=2),
+        weights("driver"),
     ],
+    outputs=play_output("world", "distance"),
 )
 
 

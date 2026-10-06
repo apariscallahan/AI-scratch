@@ -3,6 +3,7 @@
 import { api } from './api.js';
 import { BUNDLE, DEFINERS } from './blocks.js';
 import { bus, debounce } from './util.js';
+import * as Wires from './wires.js';
 
 export let workspace = null;
 let suppress = 0;
@@ -29,6 +30,7 @@ export function inject(bundle, theme) {
   });
   workspace.addChangeListener(onChange);
   window.addEventListener('resize', () => Blockly.svgResize(workspace));
+  Wires.init(workspace);
   return workspace;
 }
 
@@ -56,6 +58,7 @@ export function load(json) {
       const xy = hat.getRelativeToSurfaceXY();
       workspace.scroll(-xy.x * workspace.scale + 60, -xy.y * workspace.scale + 40);
     }
+    Wires.schedule();
   }, 30);
   scheduleCheck();
 }

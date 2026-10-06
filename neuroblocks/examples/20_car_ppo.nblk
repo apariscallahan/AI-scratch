@@ -383,119 +383,101 @@
              },
              "next": {
               "block": {
-               "type": "nb_rl_watch",
-               "fields": {
-                "MODEL": "driver",
-                "WORLD": "world"
-               },
+               "type": "nb_say",
                "inputs": {
-                "N": {
+                "TEXT": {
                  "shadow": {
-                  "type": "math_number",
+                  "type": "text",
                   "fields": {
-                   "NUM": 3
+                   "TEXT": "Hello!"
+                  }
+                 },
+                 "block": {
+                  "type": "text_join",
+                  "inputs": {
+                   "ADD0": {
+                    "block": {
+                     "type": "text",
+                     "fields": {
+                      "TEXT": "Average score: "
+                     }
+                    }
+                   },
+                   "ADD1": {
+                    "block": {
+                     "type": "nb_round_to",
+                     "inputs": {
+                      "NUM": {
+                       "shadow": {
+                        "type": "math_number",
+                        "fields": {
+                         "NUM": 3.14159
+                        }
+                       },
+                       "block": {
+                        "type": "nb_rl_score",
+                        "fields": {
+                         "MODEL": "driver",
+                         "WORLD": "world"
+                        },
+                        "inputs": {
+                         "N": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 5
+                           }
+                          }
+                         }
+                        }
+                       }
+                      },
+                      "DIGITS": {
+                       "shadow": {
+                        "type": "math_number",
+                        "fields": {
+                         "NUM": 1
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "extraState": {
+                   "itemCount": 2
                   }
                  }
                 }
                },
                "next": {
                 "block": {
-                 "type": "nb_say",
+                 "type": "nb_save",
+                 "fields": {
+                  "MODEL": "driver"
+                 },
                  "inputs": {
-                  "TEXT": {
+                  "FILE": {
                    "shadow": {
                     "type": "text",
                     "fields": {
-                     "TEXT": "Hello!"
+                     "TEXT": "my_model.pt"
                     }
                    },
                    "block": {
-                    "type": "text_join",
-                    "inputs": {
-                     "ADD0": {
-                      "block": {
-                       "type": "text",
-                       "fields": {
-                        "TEXT": "Average score: "
-                       }
-                      }
-                     },
-                     "ADD1": {
-                      "block": {
-                       "type": "nb_round_to",
-                       "inputs": {
-                        "NUM": {
-                         "shadow": {
-                          "type": "math_number",
-                          "fields": {
-                           "NUM": 3.14159
-                          }
-                         },
-                         "block": {
-                          "type": "nb_rl_score",
-                          "fields": {
-                           "MODEL": "driver",
-                           "WORLD": "world"
-                          },
-                          "inputs": {
-                           "N": {
-                            "shadow": {
-                             "type": "math_number",
-                             "fields": {
-                              "NUM": 5
-                             }
-                            }
-                           }
-                          }
-                         }
-                        },
-                        "DIGITS": {
-                         "shadow": {
-                          "type": "math_number",
-                          "fields": {
-                           "NUM": 1
-                          }
-                         }
-                        }
-                       }
-                      }
-                     }
-                    },
-                    "extraState": {
-                     "itemCount": 2
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "car_driver.pt"
                     }
                    }
                   }
                  },
                  "next": {
                   "block": {
-                   "type": "nb_save",
+                   "type": "nb_weights",
+                   "id": "weights",
                    "fields": {
                     "MODEL": "driver"
-                   },
-                   "inputs": {
-                    "FILE": {
-                     "shadow": {
-                      "type": "text",
-                      "fields": {
-                       "TEXT": "my_model.pt"
-                      }
-                     },
-                     "block": {
-                      "type": "text",
-                      "fields": {
-                       "TEXT": "car_driver.pt"
-                      }
-                     }
-                    }
-                   },
-                   "next": {
-                    "block": {
-                     "type": "nb_rl_play",
-                     "fields": {
-                      "WORLD": "world"
-                     }
-                    }
                    }
                   }
                  }
@@ -513,16 +495,198 @@
      },
      "x": 40,
      "y": 40
+    },
+    {
+     "type": "nb_when_output",
+     "id": "output",
+     "fields": {
+      "PORT": "weights"
+     },
+     "next": {
+      "block": {
+       "type": "nb_o_try",
+       "fields": {
+        "WORLD": "world"
+       },
+       "next": {
+        "block": {
+         "type": "controls_whileUntil",
+         "fields": {
+          "MODE": "UNTIL"
+         },
+         "inputs": {
+          "BOOL": {
+           "block": {
+            "type": "nb_o_over"
+           }
+          },
+          "DO": {
+           "block": {
+            "type": "variables_set",
+            "fields": {
+             "VAR": {
+              "name": "senses"
+             }
+            },
+            "inputs": {
+             "VALUE": {
+              "block": {
+               "type": "nb_o_senses"
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "variables_set",
+              "fields": {
+               "VAR": {
+                "name": "scores"
+               }
+              },
+              "inputs": {
+               "VALUE": {
+                "block": {
+                 "type": "nb_o_run",
+                 "inputs": {
+                  "INPUT": {
+                   "block": {
+                    "type": "variables_get",
+                    "fields": {
+                     "VAR": {
+                      "name": "senses"
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_o_do",
+                "inputs": {
+                 "ACTION": {
+                  "block": {
+                   "type": "nb_o_action",
+                   "inputs": {
+                    "SCORES": {
+                     "block": {
+                      "type": "variables_get",
+                      "fields": {
+                       "VAR": {
+                        "name": "scores"
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_o_try_show",
+           "next": {
+            "block": {
+             "type": "nb_say",
+             "inputs": {
+              "TEXT": {
+               "shadow": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "Hello!"
+                }
+               },
+               "block": {
+                "type": "text_join",
+                "inputs": {
+                 "ADD0": {
+                  "block": {
+                   "type": "text",
+                   "fields": {
+                    "TEXT": "Distance of this try: "
+                   }
+                  }
+                 },
+                 "ADD1": {
+                  "block": {
+                   "type": "nb_round_to",
+                   "inputs": {
+                    "NUM": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 3.14159
+                      }
+                     },
+                     "block": {
+                      "type": "nb_o_try_stat",
+                      "fields": {
+                       "WHAT": "distance"
+                      }
+                     }
+                    },
+                    "DIGITS": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 1
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "extraState": {
+                 "itemCount": 2
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_play",
+               "fields": {
+                "WORLD": "world"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 980,
+     "y": 40
     }
    ]
   },
   "workspaceComments": [
    {
+    "text": "Output: the trained driver senses the world (speed, tilt, ground radar …), runs those numbers through its network to score each action, does the action, and repeats until the try is over. Then it's your turn with the arrow keys!",
+    "width": 380,
+    "height": 130,
+    "x": 980,
+    "y": 659
+   },
+   {
     "text": "Things to try: make the terrain 'steps' or 'mixed', add 'can jump' or 'can rocket boost', remove a sense and see if it still learns, change the rewards (reward speed? punish energy?), or switch 'same world every try' off so it must handle any terrain.",
-    "x": 800,
-    "y": 40,
-    "width": 340,
-    "height": 150
+    "width": 380,
+    "height": 130,
+    "x": 980,
+    "y": 819
    }
   ]
  }

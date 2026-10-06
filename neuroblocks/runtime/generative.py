@@ -283,30 +283,43 @@ class ImageGenerator:
         if not self.nets or not self.meta:
             raise NBError(f"'{self.name}' hasn't learned anything yet — train it on pictures first.",
                           block_id=self.bid)
-        classes = self.meta.get("class_names") or []
-        k = len(classes) if self.meta.get("sig") and classes else 0
-        dev = self.device
         n = max(1, min(int(n), 100))
-        if k:
-            if cls in (None, "", "any", "all"):
-                y = torch.arange(n, device=dev) % k
-            else:
-                names = [str(c).lower() for c in classes]
-                if str(cls).lower() not in names:
-                    raise NBError(f"'{cls}' isn't one of the classes: {', '.join(map(str, classes))}.",
-                                  block_id=self.bid)
-                y = torch.full((n,), names.index(str(cls).lower()), device=dev)
-            y1h = F.one_hot(y, k).float()
+        y1h = self.class_onehot(cls, n, spread=True)
+        z = torch.randn(n, self.latent, device=self.device)
+        return self.decode(z, y1h)
+
+    def class_onehot(self, cls, n=1, spread=False) -> torch.Tensor:
+        """The class part of the generator's input. 'any' = one class per picture, round-robin
+        (``spread``) or at random."""
+        classes = (self.meta or {}).get("class_names") or []
+        k = len(classes) if (self.meta or {}).get("sig") and classes else 0
+        dev = self.device
+        if not k:
+            return torch.zeros((n, 0), device=dev)
+        if cls in (None, "", "any", "all"):
+            y = torch.arange(n, device=dev) % k if spread else torch.randint(0, k, (n,), device=dev)
         else:
-            y1h = torch.zeros((n, 0), device=dev)
-        z = torch.randn(n, self.latent, device=dev)
+            names = [str(c).lower() for c in classes]
+            key = str(cls).lower()
+            if key.endswith(".0") and key[:-2] in names:  # a number block gives 7.0
+                key = key[:-2]
+            if key not in names:
+                raise NBError(f"'{cls}' isn't one of the classes: {', '.join(map(str, classes))}.",
+                              block_id=self.bid)
+            y = torch.full((n,), names.index(key), device=dev)
+        return F.one_hot(y, k).float()
+
+    @torch.no_grad()
+    def decode(self, z: torch.Tensor, y1h: torch.Tensor) -> torch.Tensor:
+        """Noise (plus the one-hot class) → pictures (N, C, H, W) with values 0…1."""
         c, h, w = self.meta["input_shape"]
+        z = z.to(self.device)
         if self.gen_kind == "vae":
             x = self.nets["vae"].decode(z, y1h)
         else:
             self.nets["gen"].eval()
             x = (self.nets["gen"](torch.cat([z, y1h], 1)) + 1) / 2
-        return x.reshape(n, c, h, w).clamp(0, 1).cpu()
+        return x.reshape(len(z), c, h, w).clamp(0, 1).cpu()
 
     # -- save / load -----------------------------------------------------------------
     def to_payload(self):

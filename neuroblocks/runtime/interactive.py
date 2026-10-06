@@ -1,4 +1,4 @@
-"""Interactive testing in the editor's Play tab (with terminal fallbacks)."""
+"""Interactive testing in the editor's Output tab (with terminal fallbacks)."""
 from __future__ import annotations
 
 import sys
@@ -15,11 +15,11 @@ __all__ = ["play_chat", "play_draw", "play_form"]
 
 
 def _session(kind: str, model, options: dict, handler, _bid=None):
-    """Show a widget in the Play tab and answer its requests until the user presses Done."""
+    """Show a widget in the Output tab and answer its requests until the user presses Done."""
     sid = f"{kind}-{time.time_ns()}"
     emit("interactive", id=sid, kind=kind, model=getattr(model, "name", ""),
          label=getattr(model, "label", getattr(model, "name", "")), options=options, block=_bid)
-    emit("log", level="info", text=f"Try out '{getattr(model, 'label', model.name)}' in the Play tab — press Done "
+    emit("log", level="info", text=f"Try out '{getattr(model, 'label', model.name)}' in the Output tab — press Done "
                                    f"there to continue the program.")
     # Drain stale messages from an earlier session.
     while not STATE.interact_q.empty():

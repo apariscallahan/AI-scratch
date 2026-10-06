@@ -1,0 +1,345 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "MNIST: the 'hello world' of deep learning",
+ "description": "70,000 real handwritten digits (downloaded once, ~11 MB). A classic CNN reaches ~99% accuracy. Then draw digits for it.",
+ "category": "Images",
+ "level": "intermediate",
+ "minutes": 3,
+ "order": 11,
+ "id": "06_mnist",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_images",
+       "fields": {
+        "NAME": "mnist",
+        "KIND": "mnist"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_augment",
+          "fields": {
+           "AUG": "shift"
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_examples",
+         "fields": {
+          "DATA": "mnist"
+         },
+         "inputs": {
+          "N": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 24
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "cnn"
+           },
+           "inputs": {
+            "LAYERS": {
+             "block": {
+              "type": "nb_l_conv",
+              "fields": {
+               "ACT": "relu"
+              },
+              "inputs": {
+               "FILTERS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 32
+                 }
+                }
+               },
+               "SIZE": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 3
+                 }
+                }
+               },
+               "STRIDE": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_pool",
+                "fields": {
+                 "KIND": "max"
+                },
+                "inputs": {
+                 "SIZE": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 2
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_conv",
+                  "fields": {
+                   "ACT": "relu"
+                  },
+                  "inputs": {
+                   "FILTERS": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 64
+                     }
+                    }
+                   },
+                   "SIZE": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 3
+                     }
+                    }
+                   },
+                   "STRIDE": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 1
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_l_pool",
+                    "fields": {
+                     "KIND": "max"
+                    },
+                    "inputs": {
+                     "SIZE": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 2
+                       }
+                      }
+                     }
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_l_flatten",
+                      "next": {
+                       "block": {
+                        "type": "nb_l_dense",
+                        "fields": {
+                         "ACT": "relu"
+                        },
+                        "inputs": {
+                         "UNITS": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 128
+                           }
+                          }
+                         }
+                        },
+                        "next": {
+                         "block": {
+                          "type": "nb_l_dropout",
+                          "inputs": {
+                           "RATE": {
+                            "shadow": {
+                             "type": "math_number",
+                             "fields": {
+                              "NUM": 0.3
+                             }
+                            }
+                           }
+                          },
+                          "next": {
+                           "block": {
+                            "type": "nb_l_output"
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "cnn",
+              "DATA": "mnist"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_t_epochs",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 3
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_batch",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 64
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_t_optimizer",
+                    "fields": {
+                     "OPT": "adam"
+                    },
+                    "inputs": {
+                     "LR": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 0.001
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_evaluate",
+               "fields": {
+                "MODEL": "cnn",
+                "DATA": "mnist"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_show_predictions",
+                 "fields": {
+                  "MODEL": "cnn",
+                  "DATA": "mnist"
+                 },
+                 "inputs": {
+                  "N": {
+                   "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                     "NUM": 32
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_save",
+                   "fields": {
+                    "MODEL": "cnn"
+                   },
+                   "inputs": {
+                    "FILE": {
+                     "shadow": {
+                      "type": "text",
+                      "fields": {
+                       "TEXT": "my_model.pt"
+                      }
+                     },
+                     "block": {
+                      "type": "text",
+                      "fields": {
+                       "TEXT": "mnist_cnn.pt"
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_play_draw",
+                     "fields": {
+                      "MODEL": "cnn"
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "Swap MNIST for Fashion-MNIST (clothes) or CIFAR-10 (colour photos) in the dropdown. CIFAR-10 needs a bigger network and more epochs — a nice job for a cloud GPU (File ▸ Export cloud GPU bundle).",
+    "x": 760,
+    "y": 40,
+    "width": 330,
+    "height": 140
+   }
+  ]
+ }
+}

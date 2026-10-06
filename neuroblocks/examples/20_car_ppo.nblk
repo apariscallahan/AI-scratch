@@ -1,0 +1,529 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Car on rough terrain (learns to drive)",
+ "description": "Build a little car, give it abilities (drive, lean) and senses (speed, tilt, a ground radar), reward it for distance, and let reinforcement learning (PPO) figure out how to drive over the bumps. Then try it yourself!",
+ "category": "Simulations",
+ "level": "beginner",
+ "minutes": 2,
+ "order": 40,
+ "id": "20_car_ppo",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_car",
+       "fields": {
+        "NAME": "world"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_terrain",
+          "fields": {
+           "KIND": "rough"
+          },
+          "inputs": {
+           "BUMP": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 0.5
+             }
+            }
+           },
+           "HILLS": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 1.0
+             }
+            }
+           },
+           "LEN": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 120
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_w_carbody",
+            "inputs": {
+             "LEN": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 2.0
+               }
+              }
+             },
+             "WHEEL": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 0.45
+               }
+              }
+             },
+             "W": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 1.0
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_w_drive",
+              "fields": {
+               "WHEELS": "rear"
+              },
+              "inputs": {
+               "POWER": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1.0
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_w_lean",
+                "inputs": {
+                 "S": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 1.0
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_w_sense",
+                  "fields": {
+                   "WHAT": "speed"
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_w_sense",
+                    "fields": {
+                     "WHAT": "tilt"
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_w_sense",
+                      "fields": {
+                       "WHAT": "spin"
+                      },
+                      "next": {
+                       "block": {
+                        "type": "nb_w_sense_ground",
+                        "inputs": {
+                         "RAYS": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 5
+                           }
+                          }
+                         },
+                         "REACH": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 4.0
+                           }
+                          }
+                         }
+                        },
+                        "next": {
+                         "block": {
+                          "type": "nb_w_sense",
+                          "fields": {
+                           "WHAT": "wheels"
+                          },
+                          "next": {
+                           "block": {
+                            "type": "nb_w_reward",
+                            "fields": {
+                             "WHAT": "distance"
+                            },
+                            "inputs": {
+                             "W": {
+                              "shadow": {
+                               "type": "math_number",
+                               "fields": {
+                                "NUM": 1.0
+                               }
+                              }
+                             }
+                            },
+                            "next": {
+                             "block": {
+                              "type": "nb_w_finish",
+                              "inputs": {
+                               "W": {
+                                "shadow": {
+                                 "type": "math_number",
+                                 "fields": {
+                                  "NUM": 50
+                                 }
+                                }
+                               }
+                              },
+                              "next": {
+                               "block": {
+                                "type": "nb_w_flip",
+                                "fields": {
+                                 "END": true
+                                },
+                                "inputs": {
+                                 "W": {
+                                  "shadow": {
+                                   "type": "math_number",
+                                   "fields": {
+                                    "NUM": 10
+                                   }
+                                  }
+                                 }
+                                },
+                                "next": {
+                                 "block": {
+                                  "type": "nb_w_stuck",
+                                  "inputs": {
+                                   "SECS": {
+                                    "shadow": {
+                                     "type": "math_number",
+                                     "fields": {
+                                      "NUM": 3
+                                     }
+                                    }
+                                   }
+                                  },
+                                  "next": {
+                                   "block": {
+                                    "type": "nb_w_end_after",
+                                    "inputs": {
+                                     "SECS": {
+                                      "shadow": {
+                                       "type": "math_number",
+                                       "fields": {
+                                        "NUM": 30
+                                       }
+                                      }
+                                     }
+                                    },
+                                    "next": {
+                                     "block": {
+                                      "type": "nb_w_same",
+                                      "fields": {
+                                       "ON": true
+                                      }
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_rl_show",
+         "fields": {
+          "WORLD": "world"
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "driver"
+           },
+           "inputs": {
+            "LAYERS": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "tanh"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 64
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_dense",
+                "fields": {
+                 "ACT": "tanh"
+                },
+                "inputs": {
+                 "UNITS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 64
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_output"
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_train",
+             "fields": {
+              "MODEL": "driver",
+              "WORLD": "world"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_rl_algo",
+                "fields": {
+                 "ALGO": "ppo"
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_rl_steps",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 150000
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_rl_parallel",
+                    "inputs": {
+                     "N": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 8
+                       }
+                      }
+                     }
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_rl_replay",
+                      "inputs": {
+                       "N": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 5
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_watch",
+               "fields": {
+                "MODEL": "driver",
+                "WORLD": "world"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 3
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "nb_say",
+                 "inputs": {
+                  "TEXT": {
+                   "shadow": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "Hello!"
+                    }
+                   },
+                   "block": {
+                    "type": "text_join",
+                    "inputs": {
+                     "ADD0": {
+                      "block": {
+                       "type": "text",
+                       "fields": {
+                        "TEXT": "Average score: "
+                       }
+                      }
+                     },
+                     "ADD1": {
+                      "block": {
+                       "type": "nb_round_to",
+                       "inputs": {
+                        "NUM": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 3.14159
+                          }
+                         },
+                         "block": {
+                          "type": "nb_rl_score",
+                          "fields": {
+                           "MODEL": "driver",
+                           "WORLD": "world"
+                          },
+                          "inputs": {
+                           "N": {
+                            "shadow": {
+                             "type": "math_number",
+                             "fields": {
+                              "NUM": 5
+                             }
+                            }
+                           }
+                          }
+                         }
+                        },
+                        "DIGITS": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 1
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    },
+                    "extraState": {
+                     "itemCount": 2
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_save",
+                   "fields": {
+                    "MODEL": "driver"
+                   },
+                   "inputs": {
+                    "FILE": {
+                     "shadow": {
+                      "type": "text",
+                      "fields": {
+                       "TEXT": "my_model.pt"
+                      }
+                     },
+                     "block": {
+                      "type": "text",
+                      "fields": {
+                       "TEXT": "car_driver.pt"
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_rl_play",
+                     "fields": {
+                      "WORLD": "world"
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "Things to try: make the terrain 'steps' or 'mixed', add 'can jump' or 'can rocket boost', remove a sense and see if it still learns, change the rewards (reward speed? punish energy?), or switch 'same world every try' off so it must handle any terrain.",
+    "x": 800,
+    "y": 40,
+    "width": 340,
+    "height": 150
+   }
+  ]
+ }
+}

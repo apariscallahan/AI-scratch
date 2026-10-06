@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="960" height="300" rx="18" fill="#f6f7fc"/>
+  <!-- blocks -->
+  <g transform="translate(30,40)">
+    <text x="0" y="-12" font-size="15" font-weight="700" fill="#575e75">1 · snap blocks together</text>
+    <path d="M0 18 q0-18 30-18 h70 q30 0 30 18 v12 h60 v26 h-190z" fill="#FFBF00"/>
+    <text x="12" y="44" font-size="13" fill="#fff" font-weight="700">when ▶ clicked</text>
+    <rect x="0" y="58" width="250" height="30" rx="6" fill="#0FBD8C"/>
+    <text x="12" y="78" font-size="13" fill="#fff" font-weight="700">load text  data : Tiny Shakespeare</text>
+    <rect x="0" y="92" width="250" height="30" rx="6" fill="#4C97FF"/>
+    <text x="12" y="112" font-size="13" fill="#fff" font-weight="700">create GPT  model  layers 4  heads 4</text>
+    <rect x="0" y="126" width="250" height="30" rx="6" fill="#F2545B"/>
+    <text x="12" y="146" font-size="13" fill="#fff" font-weight="700">train  model  on  data  for 3000 steps</text>
+    <rect x="0" y="160" width="250" height="30" rx="6" fill="#9966FF"/>
+    <text x="12" y="180" font-size="13" fill="#fff" font-weight="700">write 300 tokens with  model …</text>
+    <rect x="0" y="194" width="250" height="30" rx="6" fill="#2EAD6B"/>
+    <text x="12" y="214" font-size="13" fill="#fff" font-weight="700">train  driver  to play in  car world</text>
+  </g>
+  <path d="M300 150 h50" stroke="#8a90a6" stroke-width="3" marker-end="url(#a)"/>
+  <!-- python -->
+  <g transform="translate(365,40)">
+    <text x="0" y="-12" font-size="15" font-weight="700" fill="#575e75">2 · they become real Python</text>
+    <rect width="250" height="224" rx="10" fill="#fff" stroke="#e3e6ef"/>
+    <g font-family="Consolas, Menlo, monospace" font-size="11.5" fill="#24292f">
+      <text x="12" y="26"><tspan fill="#cf222e">import</tspan> neuroblocks <tspan fill="#cf222e">as</tspan> nb</text>
+      <text x="12" y="52">data = nb.data.text(</text>
+      <text x="24" y="68"><tspan fill="#0a3069">'shakespeare'</tspan>, context=128)</text>
+      <text x="12" y="92">model = nb.GPT(<tspan fill="#0a3069">'model'</tspan>,</text>
+      <text x="24" y="108">layers=4, heads=4)</text>
+      <text x="12" y="132">nb.train(model, data,</text>
+      <text x="24" y="148">steps=3000)</text>
+      <text x="12" y="172">nb.generate(model,</text>
+      <text x="24" y="188"><tspan fill="#0a3069">'ROMEO:'</tspan>, 300)</text>
+    </g>
+  </g>
+  <path d="M635 150 h50" stroke="#8a90a6" stroke-width="3" marker-end="url(#a)"/>
+  <!-- run -->
+  <g transform="translate(700,40)">
+    <text x="0" y="-12" font-size="15" font-weight="700" fill="#575e75">3 · run it anywhere</text>
+    <rect width="230" height="100" rx="10" fill="#fff" stroke="#e3e6ef"/>
+    <text x="14" y="28" font-size="13" font-weight="700" fill="#2b2d42">💻 your laptop</text>
+    <text x="14" y="50" font-size="12" fill="#575e75">live charts, results, replays,</text>
+    <text x="14" y="68" font-size="12" fill="#575e75">drawing pad, chat, play mode</text>
+    <polyline points="14,96 50,90 86,92 122,85 158,81 214,76" fill="none" stroke="#6c5ce7" stroke-width="3"/>
+    <rect y="120" width="230" height="104" rx="10" fill="#2b2d42"/>
+    <text x="14" y="146" font-size="13" font-weight="700" fill="#fff">☁️ cloud GPU</text>
+    <g font-family="Consolas, Menlo, monospace" font-size="11" fill="#9fe6b4">
+      <text x="14" y="170">$ bash run.sh</text>
+      <text x="14" y="188">$ neuroblocks run p.nblk \</text>
+      <text x="14" y="206">    --device cuda</text>
+    </g>
+  </g>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#8a90a6"/></marker></defs>
+</svg>

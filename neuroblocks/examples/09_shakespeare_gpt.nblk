@@ -1,0 +1,463 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Shakespeare GPT (scale it up on a GPU)",
+ "description": "A character-level GPT trained on Shakespeare. Hyperparameter blocks let you scale it up from the command line on a cloud GPU without touching the blocks.",
+ "category": "Language models",
+ "level": "intermediate",
+ "minutes": 4,
+ "order": 21,
+ "id": "09_shakespeare_gpt",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_param",
+       "fields": {
+        "VAR": {
+         "name": "layers"
+        }
+       },
+       "inputs": {
+        "VALUE": {
+         "shadow": {
+          "type": "math_number",
+          "fields": {
+           "NUM": 4
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_param",
+         "fields": {
+          "VAR": {
+           "name": "embedding"
+          }
+         },
+         "inputs": {
+          "VALUE": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 128
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_param",
+           "fields": {
+            "VAR": {
+             "name": "context"
+            }
+           },
+           "inputs": {
+            "VALUE": {
+             "shadow": {
+              "type": "math_number",
+              "fields": {
+               "NUM": 64
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_param",
+             "fields": {
+              "VAR": {
+               "name": "batch"
+              }
+             },
+             "inputs": {
+              "VALUE": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 16
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_param",
+               "fields": {
+                "VAR": {
+                 "name": "steps"
+                }
+               },
+               "inputs": {
+                "VALUE": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 2000
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "nb_data_text",
+                 "fields": {
+                  "NAME": "shakespeare",
+                  "KIND": "shakespeare"
+                 },
+                 "inputs": {
+                  "SETTINGS": {
+                   "block": {
+                    "type": "nb_ds_tokenizer",
+                    "fields": {
+                     "TOK": "characters"
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_ds_context",
+                      "inputs": {
+                       "N": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 128
+                         }
+                        },
+                        "block": {
+                         "type": "variables_get",
+                         "fields": {
+                          "VAR": {
+                           "name": "context"
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_gpt",
+                   "fields": {
+                    "NAME": "gpt"
+                   },
+                   "inputs": {
+                    "LAYERS": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 4
+                      }
+                     },
+                     "block": {
+                      "type": "variables_get",
+                      "fields": {
+                       "VAR": {
+                        "name": "layers"
+                       }
+                      }
+                     }
+                    },
+                    "HEADS": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 4
+                      }
+                     }
+                    },
+                    "EMBED": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 128
+                      }
+                     },
+                     "block": {
+                      "type": "variables_get",
+                      "fields": {
+                       "VAR": {
+                        "name": "embedding"
+                       }
+                      }
+                     }
+                    },
+                    "DROPOUT": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 0.0
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_show_model",
+                     "fields": {
+                      "MODEL": "gpt"
+                     },
+                     "next": {
+                      "block": {
+                       "type": "nb_train",
+                       "fields": {
+                        "MODEL": "gpt",
+                        "DATA": "shakespeare"
+                       },
+                       "inputs": {
+                        "SETTINGS": {
+                         "block": {
+                          "type": "nb_t_steps",
+                          "inputs": {
+                           "N": {
+                            "shadow": {
+                             "type": "math_number",
+                             "fields": {
+                              "NUM": 1000
+                             }
+                            },
+                            "block": {
+                             "type": "variables_get",
+                             "fields": {
+                              "VAR": {
+                               "name": "steps"
+                              }
+                             }
+                            }
+                           }
+                          },
+                          "next": {
+                           "block": {
+                            "type": "nb_t_batch",
+                            "inputs": {
+                             "N": {
+                              "shadow": {
+                               "type": "math_number",
+                               "fields": {
+                                "NUM": 32
+                               }
+                              },
+                              "block": {
+                               "type": "variables_get",
+                               "fields": {
+                                "VAR": {
+                                 "name": "batch"
+                                }
+                               }
+                              }
+                             }
+                            },
+                            "next": {
+                             "block": {
+                              "type": "nb_t_optimizer",
+                              "fields": {
+                               "OPT": "adamw"
+                              },
+                              "inputs": {
+                               "LR": {
+                                "shadow": {
+                                 "type": "math_number",
+                                 "fields": {
+                                  "NUM": 0.001
+                                 }
+                                }
+                               }
+                              },
+                              "next": {
+                               "block": {
+                                "type": "nb_t_schedule",
+                                "fields": {
+                                 "SCHED": "cosine"
+                                },
+                                "inputs": {
+                                 "WARM": {
+                                  "shadow": {
+                                   "type": "math_number",
+                                   "fields": {
+                                    "NUM": 100
+                                   }
+                                  }
+                                 }
+                                },
+                                "next": {
+                                 "block": {
+                                  "type": "nb_t_every",
+                                  "fields": {
+                                   "UNIT": "steps"
+                                  },
+                                  "inputs": {
+                                   "N": {
+                                    "shadow": {
+                                     "type": "math_number",
+                                     "fields": {
+                                      "NUM": 500
+                                     }
+                                    }
+                                   },
+                                   "DO": {
+                                    "block": {
+                                     "type": "nb_generate",
+                                     "fields": {
+                                      "MODEL": "gpt"
+                                     },
+                                     "inputs": {
+                                      "LENGTH": {
+                                       "shadow": {
+                                        "type": "math_number",
+                                        "fields": {
+                                         "NUM": 200
+                                        }
+                                       }
+                                      },
+                                      "PROMPT": {
+                                       "shadow": {
+                                        "type": "text",
+                                        "fields": {
+                                         "TEXT": "ROMEO:"
+                                        }
+                                       },
+                                       "block": {
+                                        "type": "text",
+                                        "fields": {
+                                         "TEXT": "ROMEO:"
+                                        }
+                                       }
+                                      },
+                                      "TEMP": {
+                                       "shadow": {
+                                        "type": "math_number",
+                                        "fields": {
+                                         "NUM": 0.8
+                                        }
+                                       }
+                                      }
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       },
+                       "next": {
+                        "block": {
+                         "type": "nb_generate",
+                         "fields": {
+                          "MODEL": "gpt"
+                         },
+                         "inputs": {
+                          "LENGTH": {
+                           "shadow": {
+                            "type": "math_number",
+                            "fields": {
+                             "NUM": 600
+                            }
+                           }
+                          },
+                          "PROMPT": {
+                           "shadow": {
+                            "type": "text",
+                            "fields": {
+                             "TEXT": "ROMEO:"
+                            }
+                           },
+                           "block": {
+                            "type": "text",
+                            "fields": {
+                             "TEXT": "JULIET:"
+                            }
+                           }
+                          },
+                          "TEMP": {
+                           "shadow": {
+                            "type": "math_number",
+                            "fields": {
+                             "NUM": 0.8
+                            }
+                           }
+                          }
+                         },
+                         "next": {
+                          "block": {
+                           "type": "nb_save",
+                           "fields": {
+                            "MODEL": "gpt"
+                           },
+                           "inputs": {
+                            "FILE": {
+                             "shadow": {
+                              "type": "text",
+                              "fields": {
+                               "TEXT": "my_model.pt"
+                              }
+                             },
+                             "block": {
+                              "type": "text",
+                              "fields": {
+                               "TEXT": "shakespeare_gpt.pt"
+                              }
+                             }
+                            }
+                           },
+                           "next": {
+                            "block": {
+                             "type": "nb_play_chat",
+                             "fields": {
+                              "MODEL": "gpt"
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "These settings fit a laptop CPU. On a cloud GPU (File ▸ Export cloud GPU bundle), run:\nbash run.sh --set layers=6 --set embedding=384 --set context=256 --set batch=64 --set steps=5000\nThat is about the size of nanoGPT's Shakespeare model — it writes convincing fake Shakespeare. The trained model comes back as models/shakespeare_gpt.pt.",
+    "x": 780,
+    "y": 40,
+    "width": 380,
+    "height": 190
+   }
+  ]
+ }
+}

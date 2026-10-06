@@ -1,0 +1,179 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Draw new digits (generative AI)",
+ "description": "A picture generator studies 60,000 handwritten digits and learns to invent brand-new ones — you can even ask it for a particular digit. Watch the pictures sharpen while it trains.",
+ "category": "Images",
+ "level": "intermediate",
+ "minutes": 4,
+ "order": 13,
+ "id": "07b_generate_digits",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_images",
+       "fields": {
+        "NAME": "mnist",
+        "KIND": "mnist"
+       },
+       "next": {
+        "block": {
+         "type": "nb_gen_create",
+         "fields": {
+          "NAME": "artist",
+          "KIND": "vae"
+         },
+         "next": {
+          "block": {
+           "type": "nb_train",
+           "fields": {
+            "MODEL": "artist",
+            "DATA": "mnist"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_t_epochs",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 8
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_t_batch",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 128
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_gen_show",
+             "fields": {
+              "MODEL": "artist"
+             },
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 32
+                }
+               }
+              },
+              "CLASS": {
+               "shadow": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "any"
+                }
+               },
+               "block": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "any"
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_gen_show",
+               "fields": {
+                "MODEL": "artist"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 16
+                  }
+                 }
+                },
+                "CLASS": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "any"
+                  }
+                 },
+                 "block": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "7"
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "nb_save",
+                 "fields": {
+                  "MODEL": "artist"
+                 },
+                 "inputs": {
+                  "FILE": {
+                   "shadow": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "my_model.pt"
+                    }
+                   },
+                   "block": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "digit_artist.pt"
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "Switch VAE to GAN for sharper (but less predictable) pictures — give a GAN more epochs. Try Fashion-MNIST to invent clothes, or your own image folder!",
+    "x": 720,
+    "y": 40,
+    "width": 320,
+    "height": 110
+   }
+  ]
+ }
+}

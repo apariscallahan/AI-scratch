@@ -1,0 +1,190 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Land the rocket",
+ "description": "Fire the main engine and side thrusters to land gently on the pad. A harder problem — give it time (or a GPU).",
+ "category": "Simulations",
+ "level": "intermediate",
+ "minutes": 8,
+ "order": 44,
+ "id": "24_lander",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_lander",
+       "fields": {
+        "NAME": "world"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_wind",
+          "inputs": {
+           "W": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 0
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_w_fuel",
+            "inputs": {
+             "F": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 100
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "pilot"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_dense",
+            "fields": {
+             "ACT": "tanh"
+            },
+            "inputs": {
+             "UNITS": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 64
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "tanh"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 64
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_output"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_rl_train",
+           "fields": {
+            "MODEL": "pilot",
+            "WORLD": "world"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_rl_algo",
+              "fields": {
+               "ALGO": "ppo"
+              },
+              "next": {
+               "block": {
+                "type": "nb_rl_steps",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 300000
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_rl_parallel",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 8
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_watch",
+             "fields": {
+              "MODEL": "pilot",
+              "WORLD": "world"
+             },
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 3
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_play",
+               "fields": {
+                "WORLD": "world"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,277 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Invent new names (build a GPT from layers)",
+ "description": "The same idea as GPT, but built from individual layer blocks: the 'repeat' block sets how many transformer layers there are. It learns from 32,000 first names and invents new ones.",
+ "category": "Language models",
+ "level": "intermediate",
+ "minutes": 2,
+ "order": 22,
+ "id": "10_names",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_text",
+       "fields": {
+        "NAME": "names",
+        "KIND": "names"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_tokenizer",
+          "fields": {
+           "TOK": "characters"
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_context",
+            "inputs": {
+             "N": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 16
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "namer"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_embedding",
+            "inputs": {
+             "DIM": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 64
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_posembed",
+              "next": {
+               "block": {
+                "type": "nb_l_repeat",
+                "inputs": {
+                 "TIMES": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 3
+                   }
+                  }
+                 },
+                 "BODY": {
+                  "block": {
+                   "type": "nb_l_transformer",
+                   "fields": {
+                    "MASK": "auto"
+                   },
+                   "inputs": {
+                    "HEADS": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 4
+                      }
+                     }
+                    },
+                    "DROP": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 0.1
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_layernorm",
+                  "next": {
+                   "block": {
+                    "type": "nb_l_output"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_train",
+           "fields": {
+            "MODEL": "namer",
+            "DATA": "names"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_t_steps",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 2000
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_t_batch",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 64
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_optimizer",
+                  "fields": {
+                   "OPT": "adamw"
+                  },
+                  "inputs": {
+                   "LR": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 0.003
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_generate",
+             "fields": {
+              "MODEL": "namer"
+             },
+             "inputs": {
+              "LENGTH": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 300
+                }
+               }
+              },
+              "PROMPT": {
+               "shadow": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "ROMEO:"
+                }
+               },
+               "block": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "\n"
+                }
+               }
+              },
+              "TEMP": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 0.9
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_generate",
+               "fields": {
+                "MODEL": "namer"
+               },
+               "inputs": {
+                "LENGTH": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 120
+                  }
+                 }
+                },
+                "PROMPT": {
+                 "shadow": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "ROMEO:"
+                  }
+                 },
+                 "block": {
+                  "type": "text",
+                  "fields": {
+                   "TEXT": "\nmar"
+                  }
+                 }
+                },
+                "TEMP": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 0.8
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,211 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Predict what comes next (time series)",
+ "description": "An LSTM looks at the last 48 values of a wavy signal and predicts the next one.",
+ "category": "More ML",
+ "level": "intermediate",
+ "minutes": 1,
+ "order": 32,
+ "id": "15_forecast",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_series",
+       "fields": {
+        "NAME": "signal",
+        "KIND": "seasonal"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_window",
+          "inputs": {
+           "W": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 48
+             }
+            }
+           },
+           "H": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 1
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_noise",
+            "inputs": {
+             "NOISE": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 0.05
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "forecaster"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_rnn",
+            "fields": {
+             "KIND": "lstm",
+             "KEEP": "last"
+            },
+            "inputs": {
+             "UNITS": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 64
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "relu"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 32
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_output"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_train",
+           "fields": {
+            "MODEL": "forecaster",
+            "DATA": "signal"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_t_epochs",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 8
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_t_batch",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_optimizer",
+                  "fields": {
+                   "OPT": "adam"
+                  },
+                  "inputs": {
+                   "LR": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 0.003
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_evaluate",
+             "fields": {
+              "MODEL": "forecaster",
+              "DATA": "signal"
+             },
+             "next": {
+              "block": {
+               "type": "nb_show_predictions",
+               "fields": {
+                "MODEL": "forecaster",
+                "DATA": "signal"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 10
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

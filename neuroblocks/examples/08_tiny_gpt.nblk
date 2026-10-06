@@ -1,0 +1,273 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Your first GPT (toy stories)",
+ "description": "Train a tiny GPT from scratch on simple made-up stories. Every few hundred steps it writes a sample — watch it go from gibberish to stories. Then prompt it yourself.",
+ "category": "Language models",
+ "level": "beginner",
+ "minutes": 2,
+ "order": 20,
+ "id": "08_tiny_gpt",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_text",
+       "fields": {
+        "NAME": "stories",
+        "KIND": "toy_stories"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_tokenizer",
+          "fields": {
+           "TOK": "characters"
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_context",
+            "inputs": {
+             "N": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 64
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_gpt",
+         "fields": {
+          "NAME": "gpt"
+         },
+         "inputs": {
+          "LAYERS": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 2
+            }
+           }
+          },
+          "HEADS": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 4
+            }
+           }
+          },
+          "EMBED": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 96
+            }
+           }
+          },
+          "DROPOUT": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 0.0
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_train",
+           "fields": {
+            "MODEL": "gpt",
+            "DATA": "stories"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_t_steps",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1500
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_t_batch",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_optimizer",
+                  "fields": {
+                   "OPT": "adamw"
+                  },
+                  "inputs": {
+                   "LR": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 0.002
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_t_every",
+                    "fields": {
+                     "UNIT": "steps"
+                    },
+                    "inputs": {
+                     "N": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 300
+                       }
+                      }
+                     },
+                     "DO": {
+                      "block": {
+                       "type": "nb_generate",
+                       "fields": {
+                        "MODEL": "gpt"
+                       },
+                       "inputs": {
+                        "LENGTH": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 150
+                          }
+                         }
+                        },
+                        "PROMPT": {
+                         "shadow": {
+                          "type": "text",
+                          "fields": {
+                           "TEXT": "ROMEO:"
+                          }
+                         },
+                         "block": {
+                          "type": "text",
+                          "fields": {
+                           "TEXT": "Once upon a time"
+                          }
+                         }
+                        },
+                        "TEMP": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 0.8
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_generate",
+             "fields": {
+              "MODEL": "gpt"
+             },
+             "inputs": {
+              "LENGTH": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 400
+                }
+               }
+              },
+              "PROMPT": {
+               "shadow": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "ROMEO:"
+                }
+               },
+               "block": {
+                "type": "text",
+                "fields": {
+                 "TEXT": "One day, Max"
+                }
+               }
+              },
+              "TEMP": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 0.7
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_play_chat",
+               "fields": {
+                "MODEL": "gpt"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "A GPT reads characters and learns to guess the next one. 'layers' = depth, 'heads' = how many things it pays attention to at once, 'embedding size' = width. Bigger = smarter but slower.",
+    "x": 760,
+    "y": 40,
+    "width": 330,
+    "height": 130
+   }
+  ]
+ }
+}

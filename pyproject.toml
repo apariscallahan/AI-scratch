@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuroblocks"
+version = "0.1.0"
+description = "A Scratch-style visual block language for building, training and testing AI / ML models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "torch>=2.1",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "pymunk>=6.6",
+    "pandas>=2.0",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "websockets>=12",
+]
+
+[project.optional-dependencies]
+text = ["tiktoken>=0.6"]
+huggingface = ["transformers>=4.40", "datasets>=2.18", "accelerate>=0.30"]
+gym = ["gymnasium>=0.29"]
+dev = ["pytest>=8", "httpx>=0.27"]
+all = ["tiktoken>=0.6", "transformers>=4.40", "datasets>=2.18", "accelerate>=0.30", "gymnasium>=0.29"]
+
+[project.scripts]
+neuroblocks = "neuroblocks.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["neuroblocks*"]
+
+[tool.setuptools.package-data]
+neuroblocks = ["static/**/*", "examples/*.nblk", "runtime/assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]

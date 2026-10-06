@@ -1,0 +1,326 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Flowers & decision trees",
+ "description": "Classic machine learning: a decision tree learns yes/no questions that tell three kinds of iris flowers apart.",
+ "category": "Start here",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 2,
+ "id": "02_iris_tree",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_table",
+       "fields": {
+        "NAME": "flowers",
+        "KIND": "iris"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_test",
+          "inputs": {
+           "PCT": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 25
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_standardize",
+            "fields": {
+             "ON": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_plot",
+         "fields": {
+          "DATA": "flowers"
+         },
+         "next": {
+          "block": {
+           "type": "nb_c_tree",
+           "fields": {
+            "NAME": "tree"
+           },
+           "inputs": {
+            "DEPTH": {
+             "shadow": {
+              "type": "math_number",
+              "fields": {
+               "NUM": 3
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "tree",
+              "DATA": "flowers"
+             },
+             "next": {
+              "block": {
+               "type": "nb_evaluate",
+               "fields": {
+                "MODEL": "tree",
+                "DATA": "flowers"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_c_show_tree",
+                 "fields": {
+                  "MODEL": "tree"
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_c_importance",
+                   "fields": {
+                    "MODEL": "tree"
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_c_knn",
+                     "fields": {
+                      "NAME": "neighbours"
+                     },
+                     "inputs": {
+                      "K": {
+                       "shadow": {
+                        "type": "math_number",
+                        "fields": {
+                         "NUM": 5
+                        }
+                       }
+                      }
+                     },
+                     "next": {
+                      "block": {
+                       "type": "nb_train",
+                       "fields": {
+                        "MODEL": "neighbours",
+                        "DATA": "flowers"
+                       },
+                       "next": {
+                        "block": {
+                         "type": "nb_say",
+                         "inputs": {
+                          "TEXT": {
+                           "shadow": {
+                            "type": "text",
+                            "fields": {
+                             "TEXT": "Hello!"
+                            }
+                           },
+                           "block": {
+                            "type": "text_join",
+                            "inputs": {
+                             "ADD0": {
+                              "block": {
+                               "type": "text",
+                               "fields": {
+                                "TEXT": "Decision tree: "
+                               }
+                              }
+                             },
+                             "ADD1": {
+                              "block": {
+                               "type": "nb_round_to",
+                               "inputs": {
+                                "NUM": {
+                                 "shadow": {
+                                  "type": "math_number",
+                                  "fields": {
+                                   "NUM": 3.14159
+                                  }
+                                 },
+                                 "block": {
+                                  "type": "math_arithmetic",
+                                  "fields": {
+                                   "OP": "MULTIPLY"
+                                  },
+                                  "inputs": {
+                                   "A": {
+                                    "block": {
+                                     "type": "nb_score",
+                                     "fields": {
+                                      "METRIC": "accuracy",
+                                      "MODEL": "tree",
+                                      "DATA": "flowers"
+                                     }
+                                    }
+                                   },
+                                   "B": {
+                                    "block": {
+                                     "type": "math_number",
+                                     "fields": {
+                                      "NUM": 100
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                },
+                                "DIGITS": {
+                                 "shadow": {
+                                  "type": "math_number",
+                                  "fields": {
+                                   "NUM": 1
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             },
+                             "ADD2": {
+                              "block": {
+                               "type": "text",
+                               "fields": {
+                                "TEXT": "%   ·   k-nearest neighbours: "
+                               }
+                              }
+                             },
+                             "ADD3": {
+                              "block": {
+                               "type": "nb_round_to",
+                               "inputs": {
+                                "NUM": {
+                                 "shadow": {
+                                  "type": "math_number",
+                                  "fields": {
+                                   "NUM": 3.14159
+                                  }
+                                 },
+                                 "block": {
+                                  "type": "math_arithmetic",
+                                  "fields": {
+                                   "OP": "MULTIPLY"
+                                  },
+                                  "inputs": {
+                                   "A": {
+                                    "block": {
+                                     "type": "nb_score",
+                                     "fields": {
+                                      "METRIC": "accuracy",
+                                      "MODEL": "neighbours",
+                                      "DATA": "flowers"
+                                     }
+                                    }
+                                   },
+                                   "B": {
+                                    "block": {
+                                     "type": "math_number",
+                                     "fields": {
+                                      "NUM": 100
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                },
+                                "DIGITS": {
+                                 "shadow": {
+                                  "type": "math_number",
+                                  "fields": {
+                                   "NUM": 1
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             },
+                             "ADD4": {
+                              "block": {
+                               "type": "text",
+                               "fields": {
+                                "TEXT": "%"
+                               }
+                              }
+                             }
+                            },
+                            "extraState": {
+                             "itemCount": 5
+                            }
+                           }
+                          }
+                         },
+                         "next": {
+                          "block": {
+                           "type": "nb_decision_map",
+                           "fields": {
+                            "MODEL": "tree",
+                            "DATA": "flowers"
+                           },
+                           "next": {
+                            "block": {
+                             "type": "nb_check",
+                             "fields": {
+                              "OP": ">="
+                             },
+                             "inputs": {
+                              "VALUE": {
+                               "block": {
+                                "type": "nb_score",
+                                "fields": {
+                                 "METRIC": "accuracy",
+                                 "MODEL": "tree",
+                                 "DATA": "flowers"
+                                }
+                               }
+                              },
+                              "TARGET": {
+                               "shadow": {
+                                "type": "math_number",
+                                "fields": {
+                                 "NUM": 0.85
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

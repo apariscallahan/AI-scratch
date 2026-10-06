@@ -1,0 +1,376 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Untangle two spirals",
+ "description": "A small neural network learns to separate two tangled spirals. Watch the decision map form while it trains.",
+ "category": "Start here",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 1,
+ "id": "01_spirals",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_toy",
+       "fields": {
+        "NAME": "data",
+        "KIND": "spirals"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_samples",
+          "inputs": {
+           "N": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 600
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_noise",
+            "inputs": {
+             "NOISE": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 0.15
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_ds_test",
+              "inputs": {
+               "PCT": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 20
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_plot",
+         "fields": {
+          "DATA": "data"
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "model"
+           },
+           "inputs": {
+            "LAYERS": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "relu"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 32
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_dense",
+                "fields": {
+                 "ACT": "relu"
+                },
+                "inputs": {
+                 "UNITS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_dense",
+                  "fields": {
+                   "ACT": "relu"
+                  },
+                  "inputs": {
+                   "UNITS": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 32
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_l_output"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "model",
+              "DATA": "data"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_t_epochs",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 150
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_batch",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 32
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_t_optimizer",
+                    "fields": {
+                     "OPT": "adam"
+                    },
+                    "inputs": {
+                     "LR": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 0.01
+                       }
+                      }
+                     }
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_t_every",
+                      "fields": {
+                       "UNIT": "epochs"
+                      },
+                      "inputs": {
+                       "N": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 10
+                         }
+                        }
+                       },
+                       "DO": {
+                        "block": {
+                         "type": "nb_decision_map",
+                         "fields": {
+                          "MODEL": "model",
+                          "DATA": "data"
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_evaluate",
+               "fields": {
+                "MODEL": "model",
+                "DATA": "data"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_say",
+                 "inputs": {
+                  "TEXT": {
+                   "shadow": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "Hello!"
+                    }
+                   },
+                   "block": {
+                    "type": "text_join",
+                    "inputs": {
+                     "ADD0": {
+                      "block": {
+                       "type": "text",
+                       "fields": {
+                        "TEXT": "Test accuracy: "
+                       }
+                      }
+                     },
+                     "ADD1": {
+                      "block": {
+                       "type": "nb_round_to",
+                       "inputs": {
+                        "NUM": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 3.14159
+                          }
+                         },
+                         "block": {
+                          "type": "math_arithmetic",
+                          "fields": {
+                           "OP": "MULTIPLY"
+                          },
+                          "inputs": {
+                           "A": {
+                            "block": {
+                             "type": "nb_score",
+                             "fields": {
+                              "METRIC": "accuracy",
+                              "MODEL": "model",
+                              "DATA": "data"
+                             }
+                            }
+                           },
+                           "B": {
+                            "block": {
+                             "type": "math_number",
+                             "fields": {
+                              "NUM": 100
+                             }
+                            }
+                           }
+                          }
+                         }
+                        },
+                        "DIGITS": {
+                         "shadow": {
+                          "type": "math_number",
+                          "fields": {
+                           "NUM": 1
+                          }
+                         }
+                        }
+                       }
+                      }
+                     },
+                     "ADD2": {
+                      "block": {
+                       "type": "text",
+                       "fields": {
+                        "TEXT": "%"
+                       }
+                      }
+                     }
+                    },
+                    "extraState": {
+                     "itemCount": 3
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_check",
+                   "fields": {
+                    "OP": ">="
+                   },
+                   "inputs": {
+                    "VALUE": {
+                     "block": {
+                      "type": "nb_score",
+                      "fields": {
+                       "METRIC": "accuracy",
+                       "MODEL": "model",
+                       "DATA": "data"
+                      }
+                     }
+                    },
+                    "TARGET": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 0.9
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  },
+  "workspaceComments": [
+   {
+    "text": "Try this: change the number of layers or units, the activation (ReLU → tanh), the noise, or the dataset (moons, circles, XOR…). Then press Run again and compare the decision maps!",
+    "x": 720,
+    "y": 40,
+    "width": 320,
+    "height": 130
+   }
+  ]
+ }
+}

@@ -1,0 +1,262 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Fit a curve (predict numbers)",
+ "description": "Regression: a network learns the shape of a noisy sine wave. The purple line is what it has learned.",
+ "category": "Start here",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 3,
+ "id": "03_curve",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_toy",
+       "fields": {
+        "NAME": "data",
+        "KIND": "sine"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_samples",
+          "inputs": {
+           "N": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 400
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_noise",
+            "inputs": {
+             "NOISE": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 0.1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_plot",
+         "fields": {
+          "DATA": "data"
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "model"
+           },
+           "inputs": {
+            "LAYERS": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "tanh"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 32
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_dense",
+                "fields": {
+                 "ACT": "tanh"
+                },
+                "inputs": {
+                 "UNITS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_output"
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "model",
+              "DATA": "data"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_t_epochs",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 120
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_optimizer",
+                  "fields": {
+                   "OPT": "adam"
+                  },
+                  "inputs": {
+                   "LR": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 0.01
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_t_every",
+                    "fields": {
+                     "UNIT": "epochs"
+                    },
+                    "inputs": {
+                     "N": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 10
+                       }
+                      }
+                     },
+                     "DO": {
+                      "block": {
+                       "type": "nb_decision_map",
+                       "fields": {
+                        "MODEL": "model",
+                        "DATA": "data"
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_evaluate",
+               "fields": {
+                "MODEL": "model",
+                "DATA": "data"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_say",
+                 "inputs": {
+                  "TEXT": {
+                   "shadow": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "Hello!"
+                    }
+                   },
+                   "block": {
+                    "type": "text_join",
+                    "inputs": {
+                     "ADD0": {
+                      "block": {
+                       "type": "text",
+                       "fields": {
+                        "TEXT": "A prediction for x = 1: "
+                       }
+                      }
+                     },
+                     "ADD1": {
+                      "block": {
+                       "type": "nb_predict",
+                       "fields": {
+                        "MODEL": "model"
+                       },
+                       "inputs": {
+                        "INPUT": {
+                         "block": {
+                          "type": "lists_create_with",
+                          "inputs": {
+                           "ADD0": {
+                            "block": {
+                             "type": "math_number",
+                             "fields": {
+                              "NUM": 1
+                             }
+                            }
+                           }
+                          },
+                          "extraState": {
+                           "itemCount": 1
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    },
+                    "extraState": {
+                     "itemCount": 2
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

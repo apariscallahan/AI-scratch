@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeuroBlocks</title>
+  <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/vendor/blockly/blockly_compressed.js"></script>
+  <script src="/static/vendor/blockly/blocks_compressed.js"></script>
+  <script src="/static/vendor/blockly/msg/en.js"></script>
+  <script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<header id="topbar">
+  <div class="brand"><img src="/static/img/logo.svg" alt=""><span>NeuroBlocks</span></div>
+  <div class="menu" id="menu-file">
+    <button class="menu-btn" data-menu>File ▾</button>
+    <div class="menu-list">
+      <button data-act="new">📄 New project</button>
+      <button data-act="open">📂 Open…</button>
+      <button data-act="save">💾 Save <span class="kbd">Ctrl+S</span></button>
+      <button data-act="save-as">💾 Save as…</button>
+      <hr>
+      <button data-act="download">⬇️ Download project file (.nblk)</button>
+      <button data-act="upload">⬆️ Open project file from computer…</button>
+      <hr>
+      <button data-act="export-py">🐍 Export as Python script</button>
+      <button data-act="export-bundle">☁️ Export cloud GPU bundle (.zip)</button>
+      <hr>
+      <button data-act="runs">🕘 Past runs…</button>
+      <button data-act="targets">🖥️ Remote servers…</button>
+    </div>
+  </div>
+  <button class="top-btn" id="btn-examples">✨ Examples</button>
+  <input id="project-title" value="Untitled project" spellcheck="false" title="Project name">
+  <span id="save-state"></span>
+  <div class="spacer"></div>
+  <div class="target"><span>Run on</span><select id="target" title="Where the program runs"></select></div>
+  <label class="quick" title="Quick test: every training loop is cut to a few steps, so you can check the whole program works before a long run."><input type="checkbox" id="quick"> quick test</label>
+  <button class="run-btn" id="btn-run" title="Run (Ctrl+Enter)">
+    <svg viewBox="0 0 24 24"><path d="M5 2.5v19" stroke="#455A64" stroke-width="2" stroke-linecap="round"/><path d="M6 3.5c3-1.6 5.5 1.6 8.5 0s4-.5 4.5 0v9c-.5-.5-1.5-1.6-4.5 0s-5.5-1.6-8.5 0z" fill="#4CBF56" stroke="#45993d" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    Run
+  </button>
+  <button class="skip-btn" id="btn-skip" title="Finish the current training early and carry on with the next blocks" disabled>⏭ Skip</button>
+  <button class="stop-btn" id="btn-stop" title="Stop" disabled>
+    <svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z" fill="#EC5959" stroke="#B84848" stroke-width="1.2"/></svg>
+  </button>
+  <div class="status" id="status">Ready</div>
+  <button class="top-btn" id="btn-help" title="Help">?</button>
+  <div id="progress-line"></div>
+</header>
+
+<main id="main">
+  <div id="blockly-area"><div id="blockly-div"></div></div>
+  <div id="splitter" title="Drag to resize"></div>
+  <aside id="panel">
+    <nav id="tabs">
+      <button data-tab="console" class="active"><span class="ico">💬</span>Console<span class="dot"></span></button>
+      <button data-tab="charts"><span class="ico">📈</span>Charts<span class="dot"></span></button>
+      <button data-tab="results"><span class="ico">🖼️</span>Results<span class="dot"></span></button>
+      <button data-tab="sim"><span class="ico">🚗</span>Sim<span class="dot"></span></button>
+      <button data-tab="play"><span class="ico">🎮</span>Play<span class="dot"></span></button>
+      <button data-tab="model"><span class="ico">🧠</span>Model<span class="dot"></span></button>
+      <button data-tab="data"><span class="ico">📦</span>Data<span class="dot"></span></button>
+      <button data-tab="python"><span class="ico">🐍</span>Python<span class="dot"></span></button>
+    </nav>
+
+    <section class="tab-page active" id="tab-console">
+      <div class="page-toolbar">
+        <button class="small-btn" id="console-clear">Clear</button>
+        <label style="font-size:12px" title="Show every epoch / update line"><input type="checkbox" id="console-debug"> details</label>
+        <span class="grow"></span>
+        <span id="device-label" style="font-size:12px;color:var(--ink-3)"></span>
+      </div>
+      <div id="console-list"></div>
+    </section>
+
+    <section class="tab-page" id="tab-charts">
+      <div class="page-toolbar">
+        <label style="font-size:12px">smoothing <input type="range" id="chart-smooth" min="0" max="0.98" step="0.02" value="0.6" style="vertical-align:middle"></label>
+        <label style="font-size:12px"><input type="checkbox" id="chart-log"> log scale (loss)</label>
+        <span class="grow"></span>
+        <button class="small-btn" id="charts-clear">Clear</button>
+      </div>
+      <div id="charts-grid"></div>
+      <div class="empty" id="charts-empty"><span class="big">📈</span>Charts of the loss, accuracy and rewards appear here while a model trains.</div>
+    </section>
+
+    <section class="tab-page" id="tab-results">
+      <div class="page-toolbar"><span style="font-size:12px;color:var(--ink-3)">Newest first</span><span class="grow"></span><button class="small-btn" id="results-clear">Clear</button></div>
+      <div class="cards" id="results-list"></div>
+      <div class="empty" id="results-empty"><span class="big">🖼️</span>Test results, decision maps, predictions and generated text show up here.</div>
+    </section>
+
+    <section class="tab-page" id="tab-sim">
+      <div id="sim-wrap">
+        <div id="sim-canvas-box"><canvas id="sim-canvas"></canvas>
+          <div class="sim-overlay-msg" id="sim-empty"><div><span style="font-size:34px">🚗</span><br>Simulation replays appear here.<br>Try the <b>Car on rough terrain</b> example.</div></div>
+        </div>
+        <div id="sim-controls">
+          <button class="small-btn" id="sim-play">⏸</button>
+          <button class="small-btn" id="sim-restart" title="Restart">⏮</button>
+          <input type="range" id="sim-scrub" min="0" max="0" value="0">
+          <select id="sim-speed" class="small-btn">
+            <option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option>
+          </select>
+          <label style="font-size:12px"><input type="checkbox" id="sim-follow" checked> follow</label>
+          <label style="font-size:12px"><input type="checkbox" id="sim-latest" checked> newest</label>
+          <select id="sim-list" class="small-btn" style="max-width:220px"></select>
+        </div>
+        <div style="padding:0 10px 8px"><span id="sim-title"></span> <span id="sim-stats"></span></div>
+      </div>
+    </section>
+
+    <section class="tab-page" id="tab-play">
+      <div id="play-area"></div>
+      <div class="empty" id="play-empty"><span class="big">🎮</span>Use a <b>let me prompt…</b>, <b>let me draw for…</b>, <b>let me type inputs for…</b> or <b>let me play…</b> block to try things out here.</div>
+    </section>
+
+    <section class="tab-page" id="tab-model">
+      <div class="cards" id="model-list"></div>
+      <div class="empty" id="model-empty"><span class="big">🧠</span>When a model is built you'll see its layers, their sizes and how many numbers each one learns.</div>
+    </section>
+
+    <section class="tab-page" id="tab-data">
+      <div class="cards" id="data-list"></div>
+      <div class="cards">
+        <div class="card"><h4>📁 Your files <span class="sub" id="home-path"></span></h4>
+          <div class="body">
+            <div class="drop-zone" id="drop-zone">Drop a <b>.csv</b>, <b>.txt</b> or <b>.zip</b> of image folders here, or <button class="small-btn" id="upload-btn">choose a file</button><input type="file" id="upload-input" hidden multiple></div>
+            <div class="file-list" id="file-list" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-page" id="tab-python">
+      <div class="page-toolbar">
+        <span style="font-size:12px;color:var(--ink-2)">Your blocks as real Python code</span><span class="grow"></span>
+        <button class="small-btn" id="code-copy">Copy</button>
+        <button class="small-btn" id="code-download">Download .py</button>
+        <button class="small-btn primary" id="code-bundle">☁️ Cloud bundle</button>
+      </div>
+      <pre id="code-view"></pre>
+    </section>
+  </aside>
+</main>
+<div id="modal-root"></div>
+<div id="toasts"></div>
+<script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Read handwritten digits (CNN)",
+ "description": "A convolutional network learns to read tiny 8×8 handwritten digits (built in, no download). Then draw your own!",
+ "category": "Images",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 10,
+ "id": "05_digits_cnn",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_images",
+       "fields": {
+        "NAME": "digits",
+        "KIND": "digits"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_augment",
+          "fields": {
+           "AUG": "shift"
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_examples",
+         "fields": {
+          "DATA": "digits"
+         },
+         "inputs": {
+          "N": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 24
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "cnn"
+           },
+           "inputs": {
+            "LAYERS": {
+             "block": {
+              "type": "nb_l_conv",
+              "fields": {
+               "ACT": "relu"
+              },
+              "inputs": {
+               "FILTERS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 32
+                 }
+                }
+               },
+               "SIZE": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 3
+                 }
+                }
+               },
+               "STRIDE": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_conv",
+                "fields": {
+                 "ACT": "relu"
+                },
+                "inputs": {
+                 "FILTERS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 },
+                 "SIZE": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 3
+                   }
+                  }
+                 },
+                 "STRIDE": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 1
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_pool",
+                  "fields": {
+                   "KIND": "max"
+                  },
+                  "inputs": {
+                   "SIZE": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 2
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_l_flatten",
+                    "next": {
+                     "block": {
+                      "type": "nb_l_dense",
+                      "fields": {
+                       "ACT": "relu"
+                      },
+                      "inputs": {
+                       "UNITS": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 64
+                         }
+                        }
+                       }
+                      },
+                      "next": {
+                       "block": {
+                        "type": "nb_l_dropout",
+                        "inputs": {
+                         "RATE": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 0.3
+                           }
+                          }
+                         }
+                        },
+                        "next": {
+                         "block": {
+                          "type": "nb_l_output"
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "cnn",
+              "DATA": "digits"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_t_epochs",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 25
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_batch",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 32
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_t_optimizer",
+                    "fields": {
+                     "OPT": "adam"
+                    },
+                    "inputs": {
+                     "LR": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 0.002
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_evaluate",
+               "fields": {
+                "MODEL": "cnn",
+                "DATA": "digits"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_show_predictions",
+                 "fields": {
+                  "MODEL": "cnn",
+                  "DATA": "digits"
+                 },
+                 "inputs": {
+                  "N": {
+                   "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                     "NUM": 24
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_check",
+                   "fields": {
+                    "OP": ">="
+                   },
+                   "inputs": {
+                    "VALUE": {
+                     "block": {
+                      "type": "nb_score",
+                      "fields": {
+                       "METRIC": "accuracy",
+                       "MODEL": "cnn",
+                       "DATA": "digits"
+                      }
+                     }
+                    },
+                    "TARGET": {
+                     "shadow": {
+                      "type": "math_number",
+                      "fields": {
+                       "NUM": 0.9
+                      }
+                     }
+                    }
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_play_draw",
+                     "fields": {
+                      "MODEL": "cnn"
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

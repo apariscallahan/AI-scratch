@@ -1,0 +1,421 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Compare five classic ML models",
+ "description": "Trees, forests, k-NN, SVMs and logistic regression all try the same wine dataset. Which one wins?",
+ "category": "More ML",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 30,
+ "id": "13_compare_classic",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_table",
+       "fields": {
+        "NAME": "wine",
+        "KIND": "wine"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_test",
+          "inputs": {
+           "PCT": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 25
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_standardize",
+            "fields": {
+             "ON": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_c_tree",
+         "fields": {
+          "NAME": "tree"
+         },
+         "inputs": {
+          "DEPTH": {
+           "shadow": {
+            "type": "math_number",
+            "fields": {
+             "NUM": 4
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_c_forest",
+           "fields": {
+            "NAME": "forest"
+           },
+           "inputs": {
+            "TREES": {
+             "shadow": {
+              "type": "math_number",
+              "fields": {
+               "NUM": 100
+              }
+             }
+            },
+            "DEPTH": {
+             "shadow": {
+              "type": "math_number",
+              "fields": {
+               "NUM": 0
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_c_knn",
+             "fields": {
+              "NAME": "knn"
+             },
+             "inputs": {
+              "K": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 5
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_c_svm",
+               "fields": {
+                "NAME": "svm",
+                "KERNEL": "rbf"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_c_logistic",
+                 "fields": {
+                  "NAME": "logistic"
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_train",
+                   "fields": {
+                    "MODEL": "tree",
+                    "DATA": "wine"
+                   },
+                   "next": {
+                    "block": {
+                     "type": "nb_train",
+                     "fields": {
+                      "MODEL": "forest",
+                      "DATA": "wine"
+                     },
+                     "next": {
+                      "block": {
+                       "type": "nb_train",
+                       "fields": {
+                        "MODEL": "knn",
+                        "DATA": "wine"
+                       },
+                       "next": {
+                        "block": {
+                         "type": "nb_train",
+                         "fields": {
+                          "MODEL": "svm",
+                          "DATA": "wine"
+                         },
+                         "next": {
+                          "block": {
+                           "type": "nb_train",
+                           "fields": {
+                            "MODEL": "logistic",
+                            "DATA": "wine"
+                           },
+                           "next": {
+                            "block": {
+                             "type": "variables_set",
+                             "fields": {
+                              "VAR": {
+                               "name": "scores"
+                              }
+                             },
+                             "inputs": {
+                              "VALUE": {
+                               "block": {
+                                "type": "lists_create_with",
+                                "inputs": {
+                                 "ADD0": {
+                                  "block": {
+                                   "type": "nb_score",
+                                   "fields": {
+                                    "METRIC": "accuracy",
+                                    "MODEL": "tree",
+                                    "DATA": "wine"
+                                   }
+                                  }
+                                 },
+                                 "ADD1": {
+                                  "block": {
+                                   "type": "nb_score",
+                                   "fields": {
+                                    "METRIC": "accuracy",
+                                    "MODEL": "forest",
+                                    "DATA": "wine"
+                                   }
+                                  }
+                                 },
+                                 "ADD2": {
+                                  "block": {
+                                   "type": "nb_score",
+                                   "fields": {
+                                    "METRIC": "accuracy",
+                                    "MODEL": "knn",
+                                    "DATA": "wine"
+                                   }
+                                  }
+                                 },
+                                 "ADD3": {
+                                  "block": {
+                                   "type": "nb_score",
+                                   "fields": {
+                                    "METRIC": "accuracy",
+                                    "MODEL": "svm",
+                                    "DATA": "wine"
+                                   }
+                                  }
+                                 },
+                                 "ADD4": {
+                                  "block": {
+                                   "type": "nb_score",
+                                   "fields": {
+                                    "METRIC": "accuracy",
+                                    "MODEL": "logistic",
+                                    "DATA": "wine"
+                                   }
+                                  }
+                                 }
+                                },
+                                "extraState": {
+                                 "itemCount": 5
+                                }
+                               }
+                              }
+                             },
+                             "next": {
+                              "block": {
+                               "type": "nb_chart_list",
+                               "fields": {
+                                "KIND": "bar"
+                               },
+                               "inputs": {
+                                "LIST": {
+                                 "block": {
+                                  "type": "variables_get",
+                                  "fields": {
+                                   "VAR": {
+                                    "name": "scores"
+                                   }
+                                  }
+                                 }
+                                },
+                                "TITLE": {
+                                 "shadow": {
+                                  "type": "text",
+                                  "fields": {
+                                   "TEXT": "My chart"
+                                  }
+                                 },
+                                 "block": {
+                                  "type": "text",
+                                  "fields": {
+                                   "TEXT": "Accuracy: 1 tree · 2 forest · 3 k-NN · 4 SVM · 5 logistic"
+                                  }
+                                 }
+                                }
+                               },
+                               "next": {
+                                "block": {
+                                 "type": "nb_say",
+                                 "inputs": {
+                                  "TEXT": {
+                                   "shadow": {
+                                    "type": "text",
+                                    "fields": {
+                                     "TEXT": "Hello!"
+                                    }
+                                   },
+                                   "block": {
+                                    "type": "text_join",
+                                    "inputs": {
+                                     "ADD0": {
+                                      "block": {
+                                       "type": "text",
+                                       "fields": {
+                                        "TEXT": "Best accuracy: "
+                                       }
+                                      }
+                                     },
+                                     "ADD1": {
+                                      "block": {
+                                       "type": "nb_round_to",
+                                       "inputs": {
+                                        "NUM": {
+                                         "shadow": {
+                                          "type": "math_number",
+                                          "fields": {
+                                           "NUM": 3.14159
+                                          }
+                                         },
+                                         "block": {
+                                          "type": "math_arithmetic",
+                                          "fields": {
+                                           "OP": "MULTIPLY"
+                                          },
+                                          "inputs": {
+                                           "A": {
+                                            "block": {
+                                             "type": "math_on_list",
+                                             "fields": {
+                                              "OP": "MAX"
+                                             },
+                                             "inputs": {
+                                              "LIST": {
+                                               "block": {
+                                                "type": "variables_get",
+                                                "fields": {
+                                                 "VAR": {
+                                                  "name": "scores"
+                                                 }
+                                                }
+                                               }
+                                              }
+                                             }
+                                            }
+                                           },
+                                           "B": {
+                                            "block": {
+                                             "type": "math_number",
+                                             "fields": {
+                                              "NUM": 100
+                                             }
+                                            }
+                                           }
+                                          }
+                                         }
+                                        },
+                                        "DIGITS": {
+                                         "shadow": {
+                                          "type": "math_number",
+                                          "fields": {
+                                           "NUM": 1
+                                          }
+                                         }
+                                        }
+                                       }
+                                      }
+                                     },
+                                     "ADD2": {
+                                      "block": {
+                                       "type": "text",
+                                       "fields": {
+                                        "TEXT": "%"
+                                       }
+                                      }
+                                     }
+                                    },
+                                    "extraState": {
+                                     "itemCount": 3
+                                    }
+                                   }
+                                  }
+                                 },
+                                 "next": {
+                                  "block": {
+                                   "type": "nb_c_importance",
+                                   "fields": {
+                                    "MODEL": "forest"
+                                   },
+                                   "next": {
+                                    "block": {
+                                     "type": "nb_check",
+                                     "fields": {
+                                      "OP": ">="
+                                     },
+                                     "inputs": {
+                                      "VALUE": {
+                                       "block": {
+                                        "type": "nb_score",
+                                        "fields": {
+                                         "METRIC": "accuracy",
+                                         "MODEL": "forest",
+                                         "DATA": "wine"
+                                        }
+                                       }
+                                      },
+                                      "TARGET": {
+                                       "shadow": {
+                                        "type": "math_number",
+                                        "fields": {
+                                         "NUM": 0.9
+                                        }
+                                       }
+                                      }
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

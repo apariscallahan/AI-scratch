@@ -1,0 +1,255 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Is this review positive? (text classifier)",
+ "description": "A small transformer reads short reviews and decides if they are positive or negative — including tricky ones like 'not boring at all'. Then type your own.",
+ "category": "Language models",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 23,
+ "id": "11_sentiment",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_text_classes",
+       "fields": {
+        "NAME": "reviews",
+        "KIND": "toy_sentiment"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_tokenizer",
+          "fields": {
+           "TOK": "words"
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "reader"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_embedding",
+            "inputs": {
+             "DIM": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 32
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_posembed",
+              "next": {
+               "block": {
+                "type": "nb_l_transformer",
+                "fields": {
+                 "MASK": "auto"
+                },
+                "inputs": {
+                 "HEADS": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 2
+                   }
+                  }
+                 },
+                 "DROP": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 0.1
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_l_seqpool",
+                  "fields": {
+                   "MODE": "mean"
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_l_output"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_train",
+           "fields": {
+            "MODEL": "reader",
+            "DATA": "reviews"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_t_epochs",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 6
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_t_batch",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 32
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_t_optimizer",
+                  "fields": {
+                   "OPT": "adam"
+                  },
+                  "inputs": {
+                   "LR": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 0.003
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_evaluate",
+             "fields": {
+              "MODEL": "reader",
+              "DATA": "reviews"
+             },
+             "next": {
+              "block": {
+               "type": "nb_show_predictions",
+               "fields": {
+                "MODEL": "reader",
+                "DATA": "reviews"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 12
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "nb_say",
+                 "inputs": {
+                  "TEXT": {
+                   "shadow": {
+                    "type": "text",
+                    "fields": {
+                     "TEXT": "Hello!"
+                    }
+                   },
+                   "block": {
+                    "type": "text_join",
+                    "inputs": {
+                     "ADD0": {
+                      "block": {
+                       "type": "text",
+                       "fields": {
+                        "TEXT": "“The movie was not boring at all” → "
+                       }
+                      }
+                     },
+                     "ADD1": {
+                      "block": {
+                       "type": "nb_predict",
+                       "fields": {
+                        "MODEL": "reader"
+                       },
+                       "inputs": {
+                        "INPUT": {
+                         "block": {
+                          "type": "text",
+                          "fields": {
+                           "TEXT": "The movie was not boring at all"
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    },
+                    "extraState": {
+                     "itemCount": 2
+                    }
+                   }
+                  }
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_play_form",
+                   "fields": {
+                    "MODEL": "reader"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

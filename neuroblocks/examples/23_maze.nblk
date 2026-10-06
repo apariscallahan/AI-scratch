@@ -1,0 +1,171 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Escape the maze (Q-table)",
+ "description": "Q-learning keeps a table of how good each move is in each square. Arrows in the replay show what it has learned.",
+ "category": "Simulations",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 43,
+ "id": "23_maze",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_maze",
+       "fields": {
+        "NAME": "maze"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_maze_size",
+          "inputs": {
+           "W": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 8
+             }
+            }
+           },
+           "H": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 8
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_w_maze_walls",
+            "inputs": {
+             "PCT": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 25
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_w_maze_traps",
+              "inputs": {
+               "N": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 3
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_w_same",
+                "fields": {
+                 "ON": true
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_rl_show",
+         "fields": {
+          "WORLD": "maze"
+         },
+         "next": {
+          "block": {
+           "type": "nb_model",
+           "fields": {
+            "NAME": "explorer"
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_train",
+             "fields": {
+              "MODEL": "explorer",
+              "WORLD": "maze"
+             },
+             "inputs": {
+              "SETTINGS": {
+               "block": {
+                "type": "nb_rl_algo",
+                "fields": {
+                 "ALGO": "qtable"
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_rl_steps",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 30000
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_watch",
+               "fields": {
+                "MODEL": "explorer",
+                "WORLD": "maze"
+               },
+               "inputs": {
+                "N": {
+                 "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                   "NUM": 1
+                  }
+                 }
+                }
+               },
+               "next": {
+                "block": {
+                 "type": "nb_rl_play",
+                 "fields": {
+                  "WORLD": "maze"
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,172 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Flappy bird",
+ "description": "Flap through the gaps! Neuro-evolution is great at this one.",
+ "category": "Simulations",
+ "level": "beginner",
+ "minutes": 3,
+ "order": 45,
+ "id": "25_flappy",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_flappy",
+       "fields": {
+        "NAME": "world"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_gap",
+          "inputs": {
+           "G": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 3.5
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_w_pipe_speed",
+            "inputs": {
+             "S": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 3
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "bird"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_dense",
+            "fields": {
+             "ACT": "tanh"
+            },
+            "inputs": {
+             "UNITS": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 16
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_output"
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_rl_train",
+           "fields": {
+            "MODEL": "bird",
+            "WORLD": "world"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_rl_algo",
+              "fields": {
+               "ALGO": "evolution"
+              },
+              "next": {
+               "block": {
+                "type": "nb_rl_generations",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 25
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_rl_population",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 50
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_watch",
+             "fields": {
+              "MODEL": "bird",
+              "WORLD": "world"
+             },
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 2
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_play",
+               "fields": {
+                "WORLD": "world"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

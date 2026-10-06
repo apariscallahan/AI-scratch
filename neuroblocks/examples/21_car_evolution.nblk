@@ -1,0 +1,406 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Evolve a car (survival of the fittest)",
+ "description": "A whole population of cars drives at once. The best ones become parents of the next generation, with small random mutations. Watch the ghosts get better generation after generation.",
+ "category": "Simulations",
+ "level": "beginner",
+ "minutes": 2,
+ "order": 41,
+ "id": "21_car_evolution",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_car",
+       "fields": {
+        "NAME": "world"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_terrain",
+          "fields": {
+           "KIND": "mixed"
+          },
+          "inputs": {
+           "BUMP": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 0.6
+             }
+            }
+           },
+           "HILLS": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 1.0
+             }
+            }
+           },
+           "LEN": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 150
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_w_carbody",
+            "inputs": {
+             "LEN": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 2.0
+               }
+              }
+             },
+             "WHEEL": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 0.45
+               }
+              }
+             },
+             "W": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 1.0
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_w_drive",
+              "fields": {
+               "WHEELS": "rear"
+              },
+              "inputs": {
+               "POWER": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 1.0
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_w_lean",
+                "inputs": {
+                 "S": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 1.0
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_w_sense",
+                  "fields": {
+                   "WHAT": "speed"
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_w_sense",
+                    "fields": {
+                     "WHAT": "tilt"
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_w_sense",
+                      "fields": {
+                       "WHAT": "spin"
+                      },
+                      "next": {
+                       "block": {
+                        "type": "nb_w_sense_ground",
+                        "inputs": {
+                         "RAYS": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 5
+                           }
+                          }
+                         },
+                         "REACH": {
+                          "shadow": {
+                           "type": "math_number",
+                           "fields": {
+                            "NUM": 4.0
+                           }
+                          }
+                         }
+                        },
+                        "next": {
+                         "block": {
+                          "type": "nb_w_sense",
+                          "fields": {
+                           "WHAT": "wheels"
+                          },
+                          "next": {
+                           "block": {
+                            "type": "nb_w_reward",
+                            "fields": {
+                             "WHAT": "distance"
+                            },
+                            "inputs": {
+                             "W": {
+                              "shadow": {
+                               "type": "math_number",
+                               "fields": {
+                                "NUM": 1.0
+                               }
+                              }
+                             }
+                            },
+                            "next": {
+                             "block": {
+                              "type": "nb_w_finish",
+                              "inputs": {
+                               "W": {
+                                "shadow": {
+                                 "type": "math_number",
+                                 "fields": {
+                                  "NUM": 50
+                                 }
+                                }
+                               }
+                              },
+                              "next": {
+                               "block": {
+                                "type": "nb_w_flip",
+                                "fields": {
+                                 "END": true
+                                },
+                                "inputs": {
+                                 "W": {
+                                  "shadow": {
+                                   "type": "math_number",
+                                   "fields": {
+                                    "NUM": 10
+                                   }
+                                  }
+                                 }
+                                },
+                                "next": {
+                                 "block": {
+                                  "type": "nb_w_stuck",
+                                  "inputs": {
+                                   "SECS": {
+                                    "shadow": {
+                                     "type": "math_number",
+                                     "fields": {
+                                      "NUM": 3
+                                     }
+                                    }
+                                   }
+                                  },
+                                  "next": {
+                                   "block": {
+                                    "type": "nb_w_end_after",
+                                    "inputs": {
+                                     "SECS": {
+                                      "shadow": {
+                                       "type": "math_number",
+                                       "fields": {
+                                        "NUM": 30
+                                       }
+                                      }
+                                     }
+                                    },
+                                    "next": {
+                                     "block": {
+                                      "type": "nb_w_same",
+                                      "fields": {
+                                       "ON": true
+                                      }
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "driver"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_dense",
+            "fields": {
+             "ACT": "tanh"
+            },
+            "inputs": {
+             "UNITS": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 16
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_output"
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_rl_train",
+           "fields": {
+            "MODEL": "driver",
+            "WORLD": "world"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_rl_algo",
+              "fields": {
+               "ALGO": "evolution"
+              },
+              "next": {
+               "block": {
+                "type": "nb_rl_generations",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 25
+                   }
+                  }
+                 }
+                },
+                "next": {
+                 "block": {
+                  "type": "nb_rl_population",
+                  "inputs": {
+                   "N": {
+                    "shadow": {
+                     "type": "math_number",
+                     "fields": {
+                      "NUM": 40
+                     }
+                    }
+                   }
+                  },
+                  "next": {
+                   "block": {
+                    "type": "nb_rl_mutation",
+                    "inputs": {
+                     "S": {
+                      "shadow": {
+                       "type": "math_number",
+                       "fields": {
+                        "NUM": 0.1
+                       }
+                      }
+                     }
+                    },
+                    "next": {
+                     "block": {
+                      "type": "nb_rl_replay",
+                      "inputs": {
+                       "N": {
+                        "shadow": {
+                         "type": "math_number",
+                         "fields": {
+                          "NUM": 2
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_watch",
+             "fields": {
+              "MODEL": "driver",
+              "WORLD": "world"
+             },
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 1
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

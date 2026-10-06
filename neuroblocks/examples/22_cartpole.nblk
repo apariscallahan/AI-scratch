@@ -1,0 +1,160 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Balance a pole",
+ "description": "The classic control problem: push a cart left or right to keep the pole upright. PPO learns it in a minute or two. Can you do better with the arrow keys?",
+ "category": "Simulations",
+ "level": "beginner",
+ "minutes": 2,
+ "order": 42,
+ "id": "22_cartpole",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_world_cartpole",
+       "fields": {
+        "NAME": "world"
+       },
+       "inputs": {
+        "PARTS": {
+         "block": {
+          "type": "nb_w_end_after",
+          "inputs": {
+           "SECS": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 20
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_model",
+         "fields": {
+          "NAME": "balancer"
+         },
+         "inputs": {
+          "LAYERS": {
+           "block": {
+            "type": "nb_l_dense",
+            "fields": {
+             "ACT": "tanh"
+            },
+            "inputs": {
+             "UNITS": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 64
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_l_dense",
+              "fields": {
+               "ACT": "tanh"
+              },
+              "inputs": {
+               "UNITS": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 64
+                 }
+                }
+               }
+              },
+              "next": {
+               "block": {
+                "type": "nb_l_output"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "next": {
+          "block": {
+           "type": "nb_rl_train",
+           "fields": {
+            "MODEL": "balancer",
+            "WORLD": "world"
+           },
+           "inputs": {
+            "SETTINGS": {
+             "block": {
+              "type": "nb_rl_algo",
+              "fields": {
+               "ALGO": "ppo"
+              },
+              "next": {
+               "block": {
+                "type": "nb_rl_steps",
+                "inputs": {
+                 "N": {
+                  "shadow": {
+                   "type": "math_number",
+                   "fields": {
+                    "NUM": 50000
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_rl_watch",
+             "fields": {
+              "MODEL": "balancer",
+              "WORLD": "world"
+             },
+             "inputs": {
+              "N": {
+               "shadow": {
+                "type": "math_number",
+                "fields": {
+                 "NUM": 2
+                }
+               }
+              }
+             },
+             "next": {
+              "block": {
+               "type": "nb_rl_play",
+               "fields": {
+                "WORLD": "world"
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}

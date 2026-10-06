@@ -1,0 +1,141 @@
+{
+ "format": "neuroblocks-project",
+ "version": 1,
+ "name": "Find groups without answers (k-means)",
+ "description": "Unsupervised learning: k-means finds groups in data all by itself. Then a t-SNE map shows how digit pictures cluster.",
+ "category": "More ML",
+ "level": "beginner",
+ "minutes": 1,
+ "order": 31,
+ "id": "14_clusters",
+ "workspace": {
+  "blocks": {
+   "languageVersion": 0,
+   "blocks": [
+    {
+     "type": "nb_when_run",
+     "next": {
+      "block": {
+       "type": "nb_data_toy",
+       "fields": {
+        "NAME": "dots",
+        "KIND": "blobs"
+       },
+       "inputs": {
+        "SETTINGS": {
+         "block": {
+          "type": "nb_ds_classes",
+          "inputs": {
+           "N": {
+            "shadow": {
+             "type": "math_number",
+             "fields": {
+              "NUM": 4
+             }
+            }
+           }
+          },
+          "next": {
+           "block": {
+            "type": "nb_ds_samples",
+            "inputs": {
+             "N": {
+              "shadow": {
+               "type": "math_number",
+               "fields": {
+                "NUM": 600
+               }
+              }
+             }
+            },
+            "next": {
+             "block": {
+              "type": "nb_ds_noise",
+              "inputs": {
+               "NOISE": {
+                "shadow": {
+                 "type": "math_number",
+                 "fields": {
+                  "NUM": 0.3
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "next": {
+        "block": {
+         "type": "nb_data_plot",
+         "fields": {
+          "DATA": "dots"
+         },
+         "next": {
+          "block": {
+           "type": "nb_c_kmeans",
+           "fields": {
+            "NAME": "groups"
+           },
+           "inputs": {
+            "K": {
+             "shadow": {
+              "type": "math_number",
+              "fields": {
+               "NUM": 4
+              }
+             }
+            }
+           },
+           "next": {
+            "block": {
+             "type": "nb_train",
+             "fields": {
+              "MODEL": "groups",
+              "DATA": "dots"
+             },
+             "next": {
+              "block": {
+               "type": "nb_decision_map",
+               "fields": {
+                "MODEL": "groups",
+                "DATA": "dots"
+               },
+               "next": {
+                "block": {
+                 "type": "nb_data_images",
+                 "fields": {
+                  "NAME": "digits",
+                  "KIND": "digits"
+                 },
+                 "next": {
+                  "block": {
+                   "type": "nb_data_map",
+                   "fields": {
+                    "DATA": "digits",
+                    "METHOD": "tsne"
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "x": 40,
+     "y": 40
+    }
+   ]
+  }
+ }
+}
